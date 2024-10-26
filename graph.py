@@ -1,8 +1,6 @@
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
-from langchain_google_genai import ChatGoogleGenerativeAI
-from tqdm import tqdm
 from question_format import TestModel
 
 
