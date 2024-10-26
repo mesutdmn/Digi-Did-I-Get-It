@@ -10,11 +10,13 @@ from graph import LLMs
 from question_format import TestModel
 from all_loaders import Loaders
 import tempfile
-from dotenv import load_dotenv
-load_dotenv()
+import os
+
 
 
 st.set_page_config(page_title="Digi", page_icon="🤖")
+
+os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
 # Step 1: Data Entry Card
 st.title("Dynamic Question Generator")
