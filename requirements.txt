@@ -14,7 +14,6 @@ yt_dlp
 python-dotenv
 streamlit
 python-magic
-python-magic-bin
 unstructured
 python-pptx
 docx2txt
