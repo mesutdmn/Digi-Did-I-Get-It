@@ -17,6 +17,9 @@ ffmpeg_path = ffmpeg.get_ffmpeg_exe()
 load_dotenv()
 
 os.environ["FFMPEG_PATH"] = ffmpeg_path
+os.environ["FFMPEG_BINARY"] = ffmpeg_path
+os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_path
+
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
 st.set_page_config(page_title="Digi", page_icon="🤖")
