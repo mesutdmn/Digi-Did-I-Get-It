@@ -18,4 +18,4 @@ python-pptx
 docx2txt
 moviepy
 wikipedia
-imageio-ffmpeg
+ffmpeg-python
