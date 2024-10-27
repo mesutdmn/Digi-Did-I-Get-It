@@ -76,7 +76,7 @@ class Loaders:
             text_response = response.text  # Access the text property if response is valid
         except ValueError as e:
             print("Failed to retrieve text from response:", e)
-            text_response = "Failed to retrieve text from response, content may include harmful language."
+            text_response = " "
         return text_response
 
     def mp4_loader(self, data):
