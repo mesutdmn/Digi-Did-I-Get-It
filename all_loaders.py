@@ -71,8 +71,13 @@ class Loaders:
     def audio_loader(self, data):
         audio_file = genai.upload_file(path=data)
 
-        response = self.model.generate_content(["Convert speech to text", audio_file]).text
-        return response
+        try:
+            response = self.model.generate_content(["Convert speech to text", audio_file])
+            text_response = response.text  # Access the text property if response is valid
+        except ValueError as e:
+            print("Failed to retrieve text from response:", e)
+            text_response = "Failed to retrieve text from response, content may include harmful language."
+        return text_response
 
     def mp4_loader(self, data):
         try:
