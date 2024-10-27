@@ -30,7 +30,7 @@ def script():
         open_script = f"""<script>{scripts.read()}</script> """
         html(open_script, width=0, height=0)
 
-# os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
 tab1, tab2, tab3 = st.tabs([" ", " ", " "])
 
