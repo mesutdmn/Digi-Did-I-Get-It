@@ -8,7 +8,8 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from utils import extract_youtube_id
 import google.generativeai as genai
 from moviepy.editor import VideoFileClip
-
+import yt_dlp
+import imageio_ffmpeg as ffmpeg
 
 class Loaders:
     def __init__(self, data):
@@ -45,13 +46,26 @@ class Loaders:
             ).load()
             print(doc)
         except:
-            print("Extracting audio from YouTube video...")
-            way = "audio"
-            path_audio = [audio.path for audio in
-                          YoutubeAudioLoader(urls=[data],
-                                             save_dir=".").yield_blobs()]
-            doc = self.audio_loader(path_audio[0])
-
+            # print("Extracting audio from YouTube video...")
+            # way = "audio"
+            # path_audio = [audio.path for audio in
+            #               YoutubeAudioLoader(urls=[data],
+            #                                  save_dir=".").yield_blobs()]
+            # doc = self.audio_loader(path_audio[0])
+            ffmpeg_path = ffmpeg.get_ffmpeg_exe()
+            ydl_opts = {
+                'format': 'bestaudio/best',
+                'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192',
+                }],
+                'outtmpl': 'audio.%(ext)s',
+                'ffmpeg_location': ffmpeg_path
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([data])
+            doc = self.mp4_loader("audio.mp3")
         return doc, way
 
     def audio_loader(self, data):

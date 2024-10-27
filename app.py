@@ -10,14 +10,12 @@ import os
 from dotenv import load_dotenv
 import random
 import base64
-import imageio_ffmpeg as ffmpeg
+
 import subprocess
 
-ffmpeg_path = ffmpeg.get_ffmpeg_exe()
+
 
 load_dotenv()
-
-subprocess.run(f"--ffmpeg-location {ffmpeg_path}")
 
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
