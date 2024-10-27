@@ -12,20 +12,15 @@ import random
 import base64
 import imageio_ffmpeg as ffmpeg
 
-# ffmpeg yolunu alın
 ffmpeg_path = ffmpeg.get_ffmpeg_exe()
 
-# ffmpeg yolunu çevresel değişkene ekleyin
-os.environ["FFMPEG_PATH"] = ffmpeg_path
-
-st.write(ffmpeg_path)
 load_dotenv()
 
-
+os.environ["FFMPEG_PATH"] = ffmpeg_path
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
 st.set_page_config(page_title="Digi", page_icon="🤖")
-
+st.write(ffmpeg_path)
 def get_base64(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
