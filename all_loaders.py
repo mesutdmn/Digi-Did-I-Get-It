@@ -72,7 +72,7 @@ class Loaders:
         audio_file = genai.upload_file(path=data)
 
         try:
-            response = self.model.generate_content(["Convert speech to text", audio_file])
+            response = self.model.generate_content(["Convert speech to text, if it has bad language skip this parts.", audio_file])
             text_response = response.text  # Access the text property if response is valid
         except ValueError as e:
             print("Failed to retrieve text from response:", e)
