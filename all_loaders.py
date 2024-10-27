@@ -2,7 +2,7 @@ from langchain_community.document_loaders import (
     PyPDFLoader, TextLoader,Docx2txtLoader,
     WebBaseLoader, WikipediaLoader,
     EverNoteLoader, UnstructuredPowerPointLoader,
-    YoutubeLoader, UnstructuredEPubLoader)
+    YoutubeLoader, YoutubeAudioLoader, UnstructuredEPubLoader)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from youtube_transcript_api import YouTubeTranscriptApi
 from utils import extract_youtube_id
@@ -15,7 +15,7 @@ class Loaders:
         self.data = data
         self.model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
-        self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=2000, chunk_overlap=0)
+        self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=10000, chunk_overlap=0)
         self.loaders = {
             "pdf": PyPDFLoader,
             "txt": TextLoader,
@@ -31,19 +31,32 @@ class Loaders:
 
 
     def youtube_loader(self, data, data_type):
-        video_id = extract_youtube_id(data)
-        transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
-        available_languages = [trans.language_code for trans in transcript_languages]
+        way = "transcript"
+        try:
+            print("Extracting transcript from YouTube video...")
+            video_id = extract_youtube_id(data)
+            transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
+            available_languages = [trans.language_code for trans in transcript_languages]
 
-        doc = self.loaders[data_type].from_youtube_url(
-            f"https://www.youtube.com/watch?v={video_id}",
-            add_video_info=False,
-            language=available_languages[0],
-        ).load()
-        return doc
+            doc = self.loaders[data_type].from_youtube_url(
+                f"https://www.youtube.com/watch?v={video_id}",
+                add_video_info=False,
+                language=available_languages[0],
+            ).load()
+            print(doc)
+        except:
+            print("Extracting audio from YouTube video...")
+            way = "audio"
+            path_audio = [audio.path for audio in
+                          YoutubeAudioLoader(urls=[data],
+                                             save_dir=".").yield_blobs()]
+            doc = self.audio_loader(path_audio[0])
+
+        return doc, way
 
     def audio_loader(self, data):
         audio_file = genai.upload_file(path=data)
+
         response = self.model.generate_content(["Convert speech to text", audio_file]).text
         return response
 
@@ -60,6 +73,7 @@ class Loaders:
             print(f"An error occurred: {e}")
 
         response = self.audio_loader("audio.mp3")
+
         return response
 
     def image_loader(self, data):
@@ -68,20 +82,29 @@ class Loaders:
 
     def set_loaders(self, data_type):
         if data_type=="wiki":
-            doc = self.loaders[data_type](self.data, load_max_docs=2).load()
+            document = self.loaders[data_type](self.data, load_max_docs=2).load()
+            split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
         elif data_type=="youtube":
-            doc = self.youtube_loader(self.data, data_type)
+            document, way = self.youtube_loader(self.data, data_type)
+            if way == "transcript":
+                split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
+            else:
+                split_doc = self.text_splitter.split_text(document)
         elif data_type=="audio":
-            doc = self.audio_loader(self.data)
+            document = self.audio_loader(self.data)
+            split_doc = self.text_splitter.split_text(document)
         elif data_type=="text":
-            doc = self.data
+            document = self.data
+            split_doc = self.text_splitter.split_text(document)
         elif data_type=="mp4":
-            doc = self.mp4_loader(self.data)
+            document = self.mp4_loader(self.data)
+            split_doc = self.text_splitter.split_text(document)
         elif data_type in ["png", "jpg", "jpeg"]:
-            doc = self.image_loader(self.data)
+            document = self.image_loader(self.data)
         else:
-            doc = self.loaders[data_type](self.data).load()
-        split_doc = self.text_splitter.split_documents(doc)
+            document = self.loaders[data_type](self.data).load()
+            split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
+
         return split_doc
 
 

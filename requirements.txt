@@ -17,3 +17,4 @@ unstructured
 python-pptx
 docx2txt
 moviepy
+wikipedia

@@ -1,0 +1,33 @@
+body {{
+    background-image: url("data:image/png;base64,{background}");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    }}
+
+p {{
+color: black;
+font-family: "Google Sans",Roboto,Arial,sans-serif;
+font-size: 20px;
+
+}}
+
+
+
+header[data-testid = "stHeader"]{{background: rgba(255,255,255,0);}}
+button[data-testid = "baseButton-secondary"]{{width: 100%;}}
+div[data-testid = "stButton"] > button > div > p {{color: white; font-size: 15px;}}
+div[data-testid = "stApp"]{{background: None; color: black;}}
+div[class^="stFileUploaderFileData"] > small{{background: None; color: black;}}
+div[class^="stFileUploaderFile"] > div {{background: None; color: black;}}
+div[data-testid="stFileUploaderPagination"] > small {{background: None; color: black;}}
+div[data-testid="stFileUploaderPagination"] > div {{background: None; color: black;}}
+div[data-testid="stTabs"]{{padding: 20px; border-radius: 2rem; background: rgba(255,255,255,0.7);}}
+div[data-testid = "stMarkdownContainer"] > p {{color: black; font-size: 15px; font-weight: bold;}}
+div[data-baseweb="tooltip"] >  div {{background: rgba(255,255,255,0.7); color: black;}}
+.stButton:nth-of-type(-n+6) > div > div > div > button > div > p {{color: white;}}
+button[kind=secondary]{{background: rgba(0,0,255,0.7); color: white;}}
