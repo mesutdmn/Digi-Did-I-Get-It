@@ -65,7 +65,7 @@ class Loaders:
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([data])
-            doc = self.mp4_loader("audio.mp3")
+            doc = self.audio_loader("audio.mp3")
         return doc, way
 
     def audio_loader(self, data):
