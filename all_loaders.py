@@ -46,8 +46,8 @@ class Loaders:
             ).load()
             print(doc)
         except:
-            # print("Extracting audio from YouTube video...")
-            # way = "audio"
+            print("Extracting audio from YouTube video...")
+            way = "audio"
             # path_audio = [audio.path for audio in
             #               YoutubeAudioLoader(urls=[data],
             #                                  save_dir=".").yield_blobs()]
@@ -115,6 +115,7 @@ class Loaders:
             split_doc = self.text_splitter.split_text(document)
         elif data_type in ["png", "jpg", "jpeg"]:
             document = self.image_loader(self.data)
+            split_doc = self.text_splitter.split_text(document)
         else:
             document = self.loaders[data_type](self.data).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
