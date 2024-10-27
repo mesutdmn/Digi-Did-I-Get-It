@@ -11,10 +11,6 @@ from dotenv import load_dotenv
 import random
 import base64
 
-import subprocess
-
-
-
 load_dotenv()
 
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
@@ -178,7 +174,8 @@ with tab1:
             st.session_state.data["files"] = uploads
             for file in uploads:
                 if not check_file_type(file):
-                    st.error(f"{file.name} is invalid file type, or has manipulated extension. Please upload a valid file.")
+                    with tab2:
+                        st.error(f"{file.name} is invalid file type, or has manipulated extension. Please upload a valid file.")
                     continue
                 else:
                     data_extension = file.name.split('.')[-1].lower()

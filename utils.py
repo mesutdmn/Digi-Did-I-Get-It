@@ -24,7 +24,7 @@ def check_file_type(file):
     file_mime = mime.from_buffer(file_content)
 
     # Beklenen MIME türüyle karşılaştırma
-
+    print(f"File MIME: {file_mime}")
     return file_mime == data_types[file_extension]
 
 

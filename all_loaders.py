@@ -77,6 +77,7 @@ class Loaders:
         except ValueError as e:
             print("Failed to retrieve text from response:", e)
             text_response = " "
+        print("Audio extracted successfully, text:", text_response)
         return text_response
 
     def mp4_loader(self, data):
@@ -92,7 +93,7 @@ class Loaders:
             print(f"An error occurred: {e}")
 
         response = self.audio_loader("audio.mp3")
-
+        print("Audio extracted successfully")
         return response
 
     def image_loader(self, data):
