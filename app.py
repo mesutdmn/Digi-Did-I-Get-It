@@ -20,7 +20,7 @@ load_dotenv()
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
 st.set_page_config(page_title="Digi", page_icon="🤖")
-st.write(ffmpeg_path)
+
 def get_base64(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
