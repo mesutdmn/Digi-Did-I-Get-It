@@ -10,7 +10,15 @@ import os
 from dotenv import load_dotenv
 import random
 import base64
-import ffmpeg
+import imageio_ffmpeg as ffmpeg
+
+# ffmpeg yolunu alın
+ffmpeg_path = ffmpeg.get_ffmpeg_exe()
+
+# ffmpeg yolunu çevresel değişkene ekleyin
+os.environ["FFMPEG_PATH"] = ffmpeg_path
+
+st.write(ffmpeg_path)
 load_dotenv()
 
 
