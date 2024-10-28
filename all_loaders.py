@@ -134,7 +134,7 @@ class Loaders:
         elif data_type=="mp4":
             document = self.mp4_loader(self.data)
             split_doc = self.text_splitter.split_text(document)
-        elif data_type in ["png", "jpg", "jpeg"]:
+        elif data_type=="image":
             document = self.image_loader(self.data)
             split_doc = self.text_splitter.split_text(document)
         else:
