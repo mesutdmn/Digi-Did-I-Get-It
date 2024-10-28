@@ -47,7 +47,7 @@ if "data" not in st.session_state:
     st.session_state.choice = None
     st.session_state.user_request = 0
     st.session_state.answered = False
-
+    pypandoc.download_pandoc()
 
 if 'question_index' not in st.session_state:
     st.session_state.question_index = 0
