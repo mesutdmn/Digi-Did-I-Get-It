@@ -112,10 +112,13 @@ with tab2:
     st.button("Show the Results", use_container_width=True, on_click=calculate_results,
               disabled= not (st.session_state.question_index +1 == len(st.session_state.question_list_reorder)) & st.session_state.answered,
               help="You can see the results after you finish the exam.")
+    status = st.empty()
     p_bar = st.empty()
 
-def define_llm(data, data_type, data_name):
+def define_llm(data, data_type, data_name, situation=""):
+    st.session_state.question_list = []
     loader = Loaders(data)
+    status.info(f"Status: {situation}")
     data = loader.set_loaders(data_type)
     llm = LLMs()
     len_data = len(data)
@@ -125,8 +128,9 @@ def define_llm(data, data_type, data_name):
             response = llm.question_maker({"context": doc, "language": "Turkish"})
             TestModel(**response)
             st.session_state.question_list.append(response)
-        except:
-            pass
+        except Exception as e:
+            print("Error occurred while Testing Model questions.",e)
+            continue
     st.session_state.question_list_reorder += [question for questions in st.session_state.question_list for question in questions["test"]["questions"]]
 
 def return_random_questions():
@@ -185,23 +189,23 @@ with tab1:
                         temp_file_path = temp_file.name
 
                     data_type = data_types_dict[data_extension]
-                    define_llm(data=temp_file_path, data_type=data_type, data_name=file.name)
+                    define_llm(data=temp_file_path, data_type=data_type, data_name=file.name, situation="Uploading the file")
 
         if len(url) > 0:
             st.session_state.data["url"] = url
-            define_llm(data=url, data_type="url", data_name=url)
+            define_llm(data=url, data_type="url", data_name=url, situation="Visiting the webpage")
 
         if len(yutube) > 0:
             st.session_state.data["youtube"] = yutube
-            define_llm(data=yutube, data_type="youtube", data_name=yutube)
+            define_llm(data=yutube, data_type="youtube", data_name=yutube, situation="Extracting the audio from YouTube video")
 
         if len(wikipedia_search) > 0:
             st.session_state.data["wiki"] = wikipedia_search
-            define_llm(data=wikipedia_search, data_type="wiki", data_name=wikipedia_search)
+            define_llm(data=wikipedia_search, data_type="wiki", data_name=wikipedia_search, situation="Searching the Wikipedia")
 
         if len(text_input) > 0:
             st.session_state.data["text"] = text_input
-            define_llm(data=text_input, data_type="text", data_name="text_input")
+            define_llm(data=text_input, data_type="text", data_name="text_input", situation="Reading the text imput")
 
 
 

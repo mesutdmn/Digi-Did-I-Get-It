@@ -10,11 +10,12 @@ import google.generativeai as genai
 from moviepy.editor import VideoFileClip
 import yt_dlp
 import imageio_ffmpeg as ffmpeg
+import time
 
 class Loaders:
     def __init__(self, data):
         self.data = data
-        self.model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+        self.model = genai.GenerativeModel(model_name="gemini-1.5-flash-002")
 
         self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=10000, chunk_overlap=0)
         self.loaders = {
@@ -34,17 +35,22 @@ class Loaders:
     def youtube_loader(self, data, data_type):
         way = "transcript"
         try:
-            print("Extracting transcript from YouTube video...")
-            video_id = extract_youtube_id(data)
-            transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
-            available_languages = [trans.language_code for trans in transcript_languages]
+            doc=""
+            attempt=0
+            while (len(doc) == 0) & (attempt < 3):
+                time.sleep(5)
+                attempt += 1
+                print(f"Extracting transcript from YouTube video... {attempt}")
+                video_id = extract_youtube_id(data)
+                transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
+                available_languages = [trans.language_code for trans in transcript_languages]
 
-            doc = self.loaders[data_type].from_youtube_url(
-                f"https://www.youtube.com/watch?v={video_id}",
-                add_video_info=False,
-                language=available_languages[0],
-            ).load()
-            print(doc)
+                doc = self.loaders[data_type].from_youtube_url(
+                    f"https://www.youtube.com/watch?v={video_id}",
+                    add_video_info=False,
+                    language=available_languages[0],
+                ).load()
+
         except:
             print("Extracting audio from YouTube video...")
             way = "audio"
@@ -58,7 +64,7 @@ class Loaders:
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
-                    'preferredquality': '192',
+                    'preferredquality': '128',
                 }],
                 'outtmpl': 'audio.%(ext)s',
                 'ffmpeg_location': ffmpeg_path
@@ -66,18 +72,27 @@ class Loaders:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([data])
             doc = self.audio_loader("audio.mp3")
+        finally:
+            print("Audio Extracted successfully")
+
         return doc, way
 
     def audio_loader(self, data):
         audio_file = genai.upload_file(path=data)
-
+        print("Uploading audio file to GenerativeAI...")
+        prompt = """
+        Please provide a detailed text for the audio.
+        No need to provide timelines.
+        Do not make up any information that is not part of the audio and do not be verbose.
+        """
         try:
-            response = self.model.generate_content(["Convert speech to text, if it has bad language skip this parts.", audio_file])
+            response = self.model.generate_content([audio_file, prompt])
             text_response = response.text  # Access the text property if response is valid
+            print("Audio extracted successfully, text:", text_response)
         except ValueError as e:
             print("Failed to retrieve text from response:", e)
             text_response = " "
-        print("Audio extracted successfully, text:", text_response)
+
         return text_response
 
     def mp4_loader(self, data):
@@ -88,12 +103,11 @@ class Loaders:
             video.audio.write_audiofile("audio.mp3")
 
             print(f"Audio extracted successfully and saved to audio.mp3")
+            response = self.audio_loader("audio.mp3")
 
         except Exception as e:
             print(f"An error occurred: {e}")
-
-        response = self.audio_loader("audio.mp3")
-        print("Audio extracted successfully")
+            response = " "
         return response
 
     def image_loader(self, data):
