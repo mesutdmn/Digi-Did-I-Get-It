@@ -2,7 +2,7 @@ from langchain_community.document_loaders import (
     PyPDFLoader, TextLoader,Docx2txtLoader,
     WebBaseLoader, WikipediaLoader,
     EverNoteLoader, UnstructuredPowerPointLoader,
-    YoutubeLoader, YoutubeAudioLoader, UnstructuredEPubLoader)
+    YoutubeLoader,  UnstructuredEPubLoader)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from youtube_transcript_api import YouTubeTranscriptApi
 from utils import extract_youtube_id
@@ -11,6 +11,7 @@ from moviepy.editor import VideoFileClip
 import yt_dlp
 import imageio_ffmpeg as ffmpeg
 import time
+
 
 class Loaders:
     def __init__(self, data):

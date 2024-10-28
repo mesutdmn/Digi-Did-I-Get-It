@@ -19,3 +19,4 @@ docx2txt
 moviepy
 wikipedia
 imageio-ffmpeg
+pypandoc
