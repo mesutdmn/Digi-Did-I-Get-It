@@ -36,7 +36,7 @@ def script():
 
 tab1, tab2, tab3 = st.tabs([" ", " ", " "])
 
-data_types_dict = {"pdf":"pdf","mp3":"audio","wav":"audio","enex":"enex","mp4":"mp4","docx":"docx","png":"image","jpg":"image","pptx":"pptx","epub":"epub","txt":"txt"}
+data_types_dict = {"pdf":"pdf","mp3":"audio","wav":"audio","enex":"enex","mp4":"mp4","docx":"docx","png":"image","jpg":"image","jpeg":"image","pptx":"pptx","epub":"epub","txt":"txt"}
 
 if "data" not in st.session_state:
     st.session_state.data = {}
