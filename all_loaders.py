@@ -99,9 +99,9 @@ class Loaders:
             file_name = d["filename"]
             percent = d.get('downloaded_bytes', 0) / d.get('total_bytes', 1) * 100
             self.loader_status.info(f"{file_name} Download progress: {percent:.2f}%")
-            time.sleep(1)
         elif d['status'] == 'finished':
             file_name = d["filename"]
+            time.sleep(1)
             self.loader_status.info(f"{file_name}, Download finished!")
             time.sleep(1)
 
