@@ -1,7 +1,7 @@
 from google.api_core.exceptions import InternalServerError
 from langchain_community.document_loaders import (
     PyPDFLoader, TextLoader,Docx2txtLoader,
-    WebBaseLoader, WikipediaLoader,
+    UnstructuredURLLoader, WikipediaLoader,
     EverNoteLoader, UnstructuredPowerPointLoader,
     YoutubeLoader,  UnstructuredEPubLoader)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -28,7 +28,7 @@ class Loaders:
         self.loaders = {
             "pdf": PyPDFLoader,
             "txt": TextLoader,
-            "url": WebBaseLoader,
+            "url": UnstructuredURLLoader,
             "wiki": WikipediaLoader,
             "enex": EverNoteLoader,
             "youtube": YoutubeLoader,
