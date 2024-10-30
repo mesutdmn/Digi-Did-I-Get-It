@@ -127,7 +127,7 @@ def define_llm(data, data_type, data_name):
     loader = Loaders(data, data_type,loader_status)
     data = loader.set_loaders()
 
-    shared_list = parallel_process(data, data_name, p_bar)
+    shared_list = parallel_process(data, data_name, language_input, p_bar)
     st.session_state.question_list_reorder += list(shared_list)
 
     print("Questions are generated successfully.")
@@ -149,7 +149,9 @@ def load_components(key_id):
                                                                "out of the box, as well as tools for training custom models on your own data. The platform is built on "
                                                                "top of the latest research in AI and machine learning, and is designed to be scalable and efficient, "
                                                                "allowing developers to build and deploy models quickly and easily.", key=str(key_id)+"text")
-
+    language_input.selectbox("Language", ["Turkish", "English", "German", "French", "Spanish", "Italian",
+                                          "Portuguese", "Dutch", "Russian", "Chinese", "Japanese", "Korean"],
+                             key=str(key_id)+"lang", use_container_width=True)
 with tab1:
     back, forward = st.columns(2)
     back.button("◄ Forward to Results ", type="secondary", use_container_width=True)
@@ -159,6 +161,7 @@ with tab1:
     youtube_upload = st.empty()
     wikipedia_search = st.empty()
     text_input = st.empty()
+    language_input = st.empty()
     col1, col2 = st.columns(2)
     with col1:
         st.button("Clean Form", use_container_width=True, type="secondary", on_click=clean_components)
