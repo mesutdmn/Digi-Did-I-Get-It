@@ -22,3 +22,4 @@ wikipedia
 imageio-ffmpeg
 pypandoc
 reportlab
+libgl1
