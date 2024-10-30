@@ -124,8 +124,7 @@ with tab2:
 
 def define_llm(data, data_type, data_name):
 
-    loader = Loaders(data)
-    data = loader.set_loaders(data_type,loader_status)
+    data = Loaders(data, data_type,loader_status).set_loaders()
 
     shared_list = parallel_process(data, data_name, p_bar)
     st.session_state.question_list_reorder += list(shared_list)

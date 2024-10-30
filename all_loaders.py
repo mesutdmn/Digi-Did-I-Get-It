@@ -6,6 +6,8 @@ from langchain_community.document_loaders import (
     YoutubeLoader,  UnstructuredEPubLoader)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from youtube_transcript_api import YouTubeTranscriptApi
+
+from app import data_type, loader_status
 from utils import extract_youtube_id
 from moviepy.editor import VideoFileClip
 import yt_dlp
@@ -17,8 +19,10 @@ import google.generativeai as genai
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 class Loaders:
-    def __init__(self, data):
+    def __init__(self, data, data_type, loader_status):
         self.data = data
+        self.data_type = data_type
+        self.loader_status = loader_status
         self.model = genai.GenerativeModel(model_name="gemini-1.5-flash-002")
         self.big_model = genai.GenerativeModel(model_name="gemini-1.5-pro-002")
 
@@ -146,12 +150,12 @@ class Loaders:
             text_response = " "
         return text_response
 
-    def set_loaders(self, data_type, status):
+    def set_loaders(self):
         if data_type=="wiki":
             document = self.loaders[data_type](self.data, load_max_docs=2).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
         elif data_type=="youtube":
-            document, way = self.youtube_loader(self.data, data_type, status)
+            document, way = self.youtube_loader(self.data, self.data_type, self.loader_status)
             if way == "transcript":
                 split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
             else:
