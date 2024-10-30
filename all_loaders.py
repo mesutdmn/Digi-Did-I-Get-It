@@ -77,7 +77,8 @@ class Loaders:
                     }],
                     'outtmpl': 'audio.%(ext)s',
                     'ffmpeg_location': ffmpeg_path,
-                    'progress_hooks': [self.progress_hook]  # Progress hook
+                    'progress_hooks': [self.progress_hook],
+                    'postprocessor_hooks': [self.post_progress_hook],
                 }
 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -95,16 +96,20 @@ class Loaders:
 
     def progress_hook(self, d):
         if d['status'] == 'downloading':
+            file_name = d["filename"]
             percent = d.get('downloaded_bytes', 0) / d.get('total_bytes', 1) * 100
-            self.loader_status.info(f"Download progress: {percent:.2f}%")
+            self.loader_status.info(f"{file_name} Download progress: {percent:.2f}%")
         elif d['status'] == 'finished':
-            self.loader_status.info("Download finished!")
-        elif d['status'] == 'extracting':
-            self.loader_status.info("Extracting audio from video...")
-        elif d['status'] == 'postprocess':
-            self.loader_status.info("Post-processing audio...")
-        elif d['status'] == 'error':
-            self.loader_status.error(f"An error occurred: {d.get('error', 'Unknown error')}")
+            file_name = d["filename"]
+            self.loader_status.info(f"{file_name}, Download finished!")
+
+    def post_progress_hook(self, d):
+        if d['status'] == 'started':
+            self.loader_status.info(f"Started post-processing")
+        elif d['status'] == 'processing':
+            self.loader_status.info(f"Post-processing...")
+        elif d['status'] == 'finished':
+            self.loader_status.info(f"Post-processing finished!")
 
     def audio_loader(self, path):
         audio_file = genai.upload_file(path=path)
