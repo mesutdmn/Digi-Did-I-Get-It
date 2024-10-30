@@ -53,7 +53,7 @@ class LLMs:
         response = ""
         try:
             print("**Entered Chain**")
-            response = chain.invoke({"context": context, "language": language})
+            response = chain_big.invoke({"context": context, "language": language})
             Test(**response)
             print("**Response received**")
         except Exception as e:
