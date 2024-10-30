@@ -16,7 +16,7 @@ class LLMs:
                                             - Generate **exactly four options**, and label them as "A", "B", "C", and "D".
                                             - Only one option should be correct. Indicate this by setting only one option as `True` in the answers list, with the others as `False`.
                                             Although this instruction is in English, provide the final output in the specified language.
-                                            \n\nOutput Language: {language}
+                                            \n\nTranslate to: {language}
                                             
                                             \n\nProvide the response in the specified JSON structure. **Do not translate specific terms, labels, or the JSON structure**:
                                             {{
