@@ -36,29 +36,34 @@ class Loaders:
 
         }
 
-
-    def youtube_loader(self, data, data_type):
+    def youtube_loader(self, data, data_type, status):
         way = "transcript"
         try:
-            doc=""
-            attempt=0
-            while (len(doc) == 0) & (attempt < 3):
-                time.sleep(5)
+            doc = ""
+            attempt = 0
+            status.info("Extracting transcript from YouTube video is starting...")
+
+            while (len(doc) == 0) and (attempt < 3):
+                time.sleep(2)
                 attempt += 1
-                print(f"Extracting transcript from YouTube video... {attempt}")
+                status.info(f"Extracting transcript from YouTube video... Attempt: {attempt}")
                 video_id = extract_youtube_id(data)
-                transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
-                available_languages = [trans.language_code for trans in transcript_languages]
 
-                doc = self.loaders[data_type].from_youtube_url(
-                    f"https://www.youtube.com/watch?v={video_id}",
-                    add_video_info=False,
-                    language=available_languages[0],
-                ).load()
-                print("Transcript extracted successfully")
+                try:
+                    transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
+                    available_languages = [trans.language_code for trans in transcript_languages]
 
-        except:
-            print("Transcript Extracting Failed, Extracting audio from YouTube video...")
+                    doc = self.loaders[data_type].from_youtube_url(
+                        f"https://www.youtube.com/watch?v={video_id}",
+                        add_video_info=False,
+                        language=available_languages[0],
+                    ).load()
+                    status.info("Transcript extracted successfully.")
+                except Exception as e:
+                    status.warning(f"Attempt {attempt} failed: {str(e)}. Retrying...")
+
+        except Exception as e:
+            status.info("Transcript Extracting Failed, Trying to extracting audio from YouTube video..")
             way = "audio"
             ffmpeg_path = ffmpeg.get_ffmpeg_exe()
             ydl_opts = {
@@ -74,7 +79,7 @@ class Loaders:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([data])
             doc = self.audio_loader("audio.mp3")
-            print("Audio Extracted successfully")
+            status.info("Audio Extracted successfully.")
 
         return doc, way
 
@@ -141,12 +146,12 @@ class Loaders:
             text_response = " "
         return text_response
 
-    def set_loaders(self, data_type):
+    def set_loaders(self, data_type, status):
         if data_type=="wiki":
             document = self.loaders[data_type](self.data, load_max_docs=2).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
         elif data_type=="youtube":
-            document, way = self.youtube_loader(self.data, data_type)
+            document, way = self.youtube_loader(self.data, data_type, status)
             if way == "transcript":
                 split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
             else:

@@ -118,14 +118,14 @@ with tab2:
     st.button("Show the Results", use_container_width=True, on_click=calculate_results,
               disabled= not (st.session_state.question_index +1 == len(st.session_state.question_list_reorder)) & st.session_state.answered,
               help="You can see the results after you finish the exam.")
-    status = st.empty()
+    loader_status = st.empty()
     p_bar = st.empty()
 
 
-def define_llm(data, data_type, data_name, situation=""):
+def define_llm(data, data_type, data_name):
+
     loader = Loaders(data)
-    status.info(f"Status: {situation}")
-    data = loader.set_loaders(data_type)
+    data = loader.set_loaders(data_type,loader_status)
 
     shared_list = parallel_process(data, data_name, p_bar)
     st.session_state.question_list_reorder += list(shared_list)
@@ -189,23 +189,23 @@ with tab1:
                         temp_file_path = temp_file.name
 
                     data_type = data_types_dict[data_extension]
-                    define_llm(data=temp_file_path, data_type=data_type, data_name=file.name, situation="Uploading the file")
+                    define_llm(data=temp_file_path, data_type=data_type, data_name=file.name)
 
         if len(url) > 0:
             st.session_state.data["url"] = url
-            define_llm(data=url, data_type="url", data_name=url, situation="Visiting the webpage")
+            define_llm(data=url, data_type="url", data_name=url)
 
         if len(yutube) > 0:
             st.session_state.data["youtube"] = yutube
-            define_llm(data=yutube, data_type="youtube", data_name=yutube, situation="Extracting the audio from YouTube video")
+            define_llm(data=yutube, data_type="youtube", data_name=yutube)
 
         if len(wikipedia_search) > 0:
             st.session_state.data["wiki"] = wikipedia_search
-            define_llm(data=wikipedia_search, data_type="wiki", data_name=wikipedia_search, situation="Searching the Wikipedia")
+            define_llm(data=wikipedia_search, data_type="wiki", data_name=wikipedia_search)
 
         if len(text_input) > 0:
             st.session_state.data["text"] = text_input
-            define_llm(data=text_input, data_type="text", data_name="text_input", situation="Reading the text imput")
+            define_llm(data=text_input, data_type="text", data_name="text_input")
 
 
 
