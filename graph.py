@@ -1,6 +1,8 @@
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
+from unstructured.cleaners.translate import translate_text
+
 from question_format import Test
 
 
@@ -37,6 +39,22 @@ class LLMs:
                                     {format_instructions}
                                 """
 
+        self.translation_template = """
+                                            You are a translation expert. Given a JSON structure, translate only the **values** of the JSON into the specified language while leaving **keys unchanged**. 
+
+                                            Requirements:
+                                            - Preserve the JSON structure exactly as given.
+                                            - Only translate the text within the values.
+                                            - If the values are already in the target language, leave them as they are.
+                                            - **Do not translate specific terms, labels, or the JSON structure**
+
+                                            Provide the translated JSON output without modifying any keys.
+
+                                            JSON Data:
+                                            {json_data}
+                                            Target Language: {language}
+                                        """
+
     def question_maker(self, input):
         context = input["context"]
         language = input["language"]
@@ -54,16 +72,53 @@ class LLMs:
         try:
             print("**Entered Chain**")
             response = chain.invoke({"context": context, "language": language})
-            Test(**response)
-            print("**Response received**")
+
+            # Convert response to a dictionary if needed for translation
+            translated_response = self.translate_text({
+                "json_data": response if isinstance(response, Test) else response,
+                "language": language
+            })
+
+            print("**Response received and translated**")
         except Exception as e:
             print("Triggered Bigger Model", e)
             response = chain_big.invoke({"context": context, "language": language})
             try:
-                Test(**response)
+                translated_response = self.translate_text({
+                    "json_data": response if isinstance(response, Test) else response,
+                    "language": language
+                })
                 print("**Error Fixed By Bigger Model**")
             except Exception as e:
                 print("Error occurred while Testing Model questions.", e)
+                translated_response = response  # fallback if translation fails
+        return translated_response
+
+    def translate_text(self, input):
+
+        parser = JsonOutputParser(pydantic_object=Test)
+        prompt = PromptTemplate(
+            template=self.translation_template,
+            input_variables=["json_data", "language"],
+            partial_variables={"format_instructions": parser.get_format_instructions()},
+        )
+        chain = prompt | self.model | parser
+        chain_big = prompt | self.bigger_model | parser
+        print("**Chain created**")
+        try:
+            print("**Entered Chain**")
+            response = chain.invoke(input)
+            Test(**response)
+            print("**Response received**")
+        except Exception as e:
+            print("Triggered Bigger Model", e)
+            response = chain_big.invoke(input)
+            try:
+                Test(**response)
+                print("**Translated By Bigger Model**")
+            except Exception as e:
+                print("Error occurred while Testing Model questions.", e)
+                response = input["json_data"]
         return response
 
 
