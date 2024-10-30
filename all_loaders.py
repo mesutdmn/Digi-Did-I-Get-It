@@ -76,18 +76,29 @@ class Loaders:
                         'preferredquality': '128',
                     }],
                     'outtmpl': 'audio.%(ext)s',
-                    'ffmpeg_location': ffmpeg_path
+                    'ffmpeg_location': ffmpeg_path,
+                    'progress_hooks': [self.progress_hook]  # Progress hook
                 }
+
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([self.data])
+
                 doc = self.audio_loader("audio.mp3")
                 self.loader_status.info("Audio extracted successfully.")
+                time.sleep(2)
+                self.loader_status.info("Sending audio to GenerativeAI for text extraction...")
 
         except Exception as e:
-            doc = ""
             self.loader_status.error(f"An unexpected error occurred: {str(e)}")
-
+            doc = ""
         return doc, way
+
+    def progress_hook(self, d):
+        if d['status'] == 'downloading':
+            percent = d.get('downloaded_bytes', 0) / d.get('total_bytes', 1) * 100
+            self.loader_status.info(f"Download progress: {percent:.2f}%")
+        elif d['status'] == 'finished':
+            self.loader_status.info("Download finished!")
 
     def audio_loader(self, path):
         audio_file = genai.upload_file(path=path)
