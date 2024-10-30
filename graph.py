@@ -15,8 +15,10 @@ class LLMs:
                                             You are an exam preparation expert tasked with generating multiple-choice questions from the provided context. For each question:
                                             - Generate **exactly four options**, and label them as "A", "B", "C", and "D".
                                             - Only one option should be correct. Indicate this by setting only one option as `True` in the answers list, with the others as `False`.
-
-                                            Provide the response in the specified JSON structure. **Do not translate specific terms, labels, or the JSON structure**:
+                                            Although this instruction is in English, provide the final output in the specified language.
+                                            \n\nOutput Language: {language}
+                                            
+                                            \n\nProvide the response in the specified JSON structure. **Do not translate specific terms, labels, or the JSON structure**:
                                             {{
                                                 "question": "The text of the question.",
                                                 "choices": [
@@ -30,11 +32,10 @@ class LLMs:
                                                 "explain": "A brief explanation of why the correct answer is correct."
                                             }}
 
-                                            Although this instruction is in English, provide the final output in the specified language.
-
-                                            Context: {context}
-                                            Output Language: {language}
-                                            {format_instructions}
+                                            
+                                            \nContext: {context}
+                                            
+                                            \n{format_instructions}
                                         """
 
     def question_maker(self, input):
@@ -53,7 +54,7 @@ class LLMs:
         response = ""
         try:
             print("**Entered Chain**")
-            response = chain_big.invoke({"context": context, "language": language})
+            response = chain.invoke({"context": context, "language": language})
             Test(**response)
             print("**Response received**")
         except Exception as e:
