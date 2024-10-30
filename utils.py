@@ -87,7 +87,7 @@ def create_pdf(data):
         "Questions",
         ParagraphStyle(
             name='CenteredTitle',
-            fontName='Arial',
+            fontName='NotoSans',
             fontSize=16,
             alignment=TA_CENTER,
             spaceAfter=0.5 * inch
@@ -138,7 +138,7 @@ def create_pdf(data):
         "Answers",
         ParagraphStyle(
             name='CenteredTitle',
-            fontName='Arial',
+            fontName='NotoSans',
             fontSize=16,
             alignment=TA_CENTER,
             spaceAfter=0.5 * inch
