@@ -192,8 +192,8 @@ with tab1:
                     define_llm(data=temp_file_path, data_type=data_type, data_name=file.name)
 
         if len(url) > 0:
-            st.session_state.data["url"] = url
-            define_llm(data=url, data_type="url", data_name=url)
+            st.session_state.data["url"] = [url]
+            define_llm(data=[url], data_type="url", data_name=url)
 
         if len(yutube) > 0:
             st.session_state.data["youtube"] = yutube
