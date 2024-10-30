@@ -6,8 +6,6 @@ from langchain_community.document_loaders import (
     YoutubeLoader,  UnstructuredEPubLoader)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from youtube_transcript_api import YouTubeTranscriptApi
-
-from app import data_type, loader_status
 from utils import extract_youtube_id
 from moviepy.editor import VideoFileClip
 import yt_dlp
@@ -57,7 +55,7 @@ class Loaders:
                     transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
                     available_languages = [trans.language_code for trans in transcript_languages]
 
-                    doc = self.loaders[data_type].from_youtube_url(
+                    doc = self.loaders[self.data_type].from_youtube_url(
                         f"https://www.youtube.com/watch?v={video_id}",
                         add_video_info=False,
                         language=available_languages[0],
@@ -151,29 +149,29 @@ class Loaders:
         return text_response
 
     def set_loaders(self):
-        if data_type=="wiki":
-            document = self.loaders[data_type](self.data, load_max_docs=2).load()
+        if self.data_type=="wiki":
+            document = self.loaders[self.data_type](self.data, load_max_docs=2).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
-        elif data_type=="youtube":
+        elif self.data_type=="youtube":
             document, way = self.youtube_loader()
             if way == "transcript":
                 split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
             else:
                 split_doc = self.text_splitter.split_text(document)
-        elif data_type=="audio":
+        elif self.data_type=="audio":
             document = self.audio_loader(self.data)
             split_doc = self.text_splitter.split_text(document)
-        elif data_type=="text":
+        elif self.data_type=="text":
             document = self.data
             split_doc = self.text_splitter.split_text(document)
-        elif data_type=="mp4":
+        elif self.data_type=="mp4":
             document = self.mp4_loader()
             split_doc = self.text_splitter.split_text(document)
-        elif data_type=="image":
+        elif self.data_type=="image":
             document = self.image_loader()
             split_doc = self.text_splitter.split_text(document)
         else:
-            document = self.loaders[data_type](self.data).load()
+            document = self.loaders[self.data_type](self.data).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
 
         return split_doc
