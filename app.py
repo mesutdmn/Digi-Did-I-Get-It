@@ -151,7 +151,7 @@ def load_components(key_id):
                                                                "allowing developers to build and deploy models quickly and easily.", key=str(key_id)+"text")
     language_input.selectbox("Language", ["Turkish", "English", "German", "French", "Spanish", "Italian",
                                           "Portuguese", "Dutch", "Russian", "Chinese", "Japanese", "Korean"],
-                             key=str(key_id)+"lang", use_container_width=True)
+                             key=str(key_id)+"lang")
 with tab1:
     back, forward = st.columns(2)
     back.button("◄ Forward to Results ", type="secondary", use_container_width=True)
