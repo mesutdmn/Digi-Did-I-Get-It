@@ -40,9 +40,9 @@ class Loaders:
 
     def youtube_loader(self):
         way = "transcript"
+        doc = ""
+        attempt = 0
         try:
-            doc = ""
-            attempt = 0
             self.loader_status.info("Extracting transcript from YouTube video is starting...")
 
             while (len(doc) == 0) and (attempt < 3):
@@ -99,17 +99,22 @@ class Loaders:
             file_name = d["filename"]
             percent = d.get('downloaded_bytes', 0) / d.get('total_bytes', 1) * 100
             self.loader_status.info(f"{file_name} Download progress: {percent:.2f}%")
+            time.sleep(1)
         elif d['status'] == 'finished':
             file_name = d["filename"]
             self.loader_status.info(f"{file_name}, Download finished!")
+            time.sleep(1)
 
     def post_progress_hook(self, d):
         if d['status'] == 'started':
             self.loader_status.info(f"Started post-processing")
+            time.sleep(1)
         elif d['status'] == 'processing':
             self.loader_status.info(f"Post-processing...")
+            time.sleep(1)
         elif d['status'] == 'finished':
             self.loader_status.info(f"Post-processing finished!")
+            time.sleep(1)
 
     def audio_loader(self, path):
         audio_file = genai.upload_file(path=path)
