@@ -22,4 +22,3 @@ wikipedia
 imageio-ffmpeg
 pypandoc
 reportlab
-libigl
