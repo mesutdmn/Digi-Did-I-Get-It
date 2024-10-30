@@ -122,7 +122,7 @@ with tab2:
     p_bar = st.empty()
 
 
-def define_llm(data, data_type, data_name):
+def define_llm(data, data_type, data_name, language_input="English"):
 
     loader = Loaders(data, data_type,loader_status)
     data = loader.set_loaders()
@@ -192,23 +192,23 @@ with tab1:
                         temp_file_path = temp_file.name
 
                     data_type = data_types_dict[data_extension]
-                    define_llm(data=temp_file_path, data_type=data_type, data_name=file.name)
+                    define_llm(data=temp_file_path, data_type=data_type, data_name=file.name, language_input=language_input)
 
         if len(url) > 0:
             st.session_state.data["url"] = [url]
-            define_llm(data=[url], data_type="url", data_name=url)
+            define_llm(data=[url], data_type="url", data_name=url, language_input=language_input)
 
         if len(yutube) > 0:
             st.session_state.data["youtube"] = yutube
-            define_llm(data=yutube, data_type="youtube", data_name=yutube)
+            define_llm(data=yutube, data_type="youtube", data_name=yutube, language_input=language_input)
 
         if len(wikipedia_search) > 0:
             st.session_state.data["wiki"] = wikipedia_search
-            define_llm(data=wikipedia_search, data_type="wiki", data_name=wikipedia_search)
+            define_llm(data=wikipedia_search, data_type="wiki", data_name=wikipedia_search, language_input=language_input)
 
         if len(text_input) > 0:
             st.session_state.data["text"] = text_input
-            define_llm(data=text_input, data_type="text", data_name="text_input")
+            define_llm(data=text_input, data_type="text", data_name="text_input", language_input=language_input)
 
 
 
