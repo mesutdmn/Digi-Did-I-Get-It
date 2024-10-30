@@ -99,6 +99,12 @@ class Loaders:
             self.loader_status.info(f"Download progress: {percent:.2f}%")
         elif d['status'] == 'finished':
             self.loader_status.info("Download finished!")
+        elif d['status'] == 'extracting':
+            self.loader_status.info("Extracting audio from video...")
+        elif d['status'] == 'postprocess':
+            self.loader_status.info("Post-processing audio...")
+        elif d['status'] == 'error':
+            self.loader_status.error(f"An error occurred: {d.get('error', 'Unknown error')}")
 
     def audio_loader(self, path):
         audio_file = genai.upload_file(path=path)
