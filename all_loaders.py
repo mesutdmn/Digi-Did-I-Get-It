@@ -19,7 +19,7 @@ import google.generativeai as genai
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 class Loaders:
-    def __init__(self, data, data_type, loader_status):
+    def __init__(self, data,data_type, loader_status):
         self.data = data
         self.data_type = data_type
         self.loader_status = loader_status
@@ -40,18 +40,18 @@ class Loaders:
 
         }
 
-    def youtube_loader(self, data, data_type, status):
+    def youtube_loader(self):
         way = "transcript"
         try:
             doc = ""
             attempt = 0
-            status.info("Extracting transcript from YouTube video is starting...")
+            self.loader_status.info("Extracting transcript from YouTube video is starting...")
 
             while (len(doc) == 0) and (attempt < 3):
                 time.sleep(2)
                 attempt += 1
-                status.info(f"Extracting transcript from YouTube video... Attempt: {attempt}")
-                video_id = extract_youtube_id(data)
+                self.loader_status.info(f"Extracting transcript from YouTube video... Attempt: {attempt}")
+                video_id = extract_youtube_id(self.data)
 
                 try:
                     transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
@@ -62,12 +62,12 @@ class Loaders:
                         add_video_info=False,
                         language=available_languages[0],
                     ).load()
-                    status.info("Transcript extracted successfully.")
+                    self.loader_status.info("Transcript extracted successfully.")
                 except Exception as e:
-                    status.warning(f"Attempt {attempt} failed: {str(e)}. Retrying...")
+                    self.loader_status.warning(f"Attempt {attempt} failed: {str(e)}. Retrying...")
 
         except Exception as e:
-            status.info("Transcript Extracting Failed, Trying to extracting audio from YouTube video..")
+            self.loader_status.info("Transcript Extracting Failed, Trying to extracting audio from YouTube video..")
             way = "audio"
             ffmpeg_path = ffmpeg.get_ffmpeg_exe()
             ydl_opts = {
@@ -81,14 +81,14 @@ class Loaders:
                 'ffmpeg_location': ffmpeg_path
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([data])
+                ydl.download([self.data])
             doc = self.audio_loader("audio.mp3")
-            status.info("Audio Extracted successfully.")
+            self.loader_status.info("Audio Extracted successfully.")
 
         return doc, way
 
-    def audio_loader(self, data):
-        audio_file = genai.upload_file(path=data)
+    def audio_loader(self, path):
+        audio_file = genai.upload_file(path=path)
         print("Uploading audio file to GenerativeAI...")
         prompt = """
         Please provide a detailed text for the audio.
@@ -111,9 +111,9 @@ class Loaders:
 
         return text_response
 
-    def mp4_loader(self, data):
+    def mp4_loader(self):
         try:
-            video = VideoFileClip(data)
+            video = VideoFileClip(self.data)
 
             # Sesi çıkarma ve kaydetme
             video.audio.write_audiofile("audio.mp3")
@@ -126,8 +126,8 @@ class Loaders:
             response = " "
         return response
 
-    def image_loader(self, data):
-        image_file = genai.upload_file(path=data)
+    def image_loader(self):
+        image_file = genai.upload_file(path=self.data)
         prompt = """
                 You are a highly accurate text recognition assistant. Please extract all readable text from the image file provided. 
                 Return only the text in a well-organized and clear format, preserving any distinct sections, titles, paragraphs, or lists. 
@@ -155,7 +155,7 @@ class Loaders:
             document = self.loaders[data_type](self.data, load_max_docs=2).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
         elif data_type=="youtube":
-            document, way = self.youtube_loader(self.data, self.data_type, self.loader_status)
+            document, way = self.youtube_loader()
             if way == "transcript":
                 split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
             else:
@@ -167,10 +167,10 @@ class Loaders:
             document = self.data
             split_doc = self.text_splitter.split_text(document)
         elif data_type=="mp4":
-            document = self.mp4_loader(self.data)
+            document = self.mp4_loader()
             split_doc = self.text_splitter.split_text(document)
         elif data_type=="image":
-            document = self.image_loader(self.data)
+            document = self.image_loader()
             split_doc = self.text_splitter.split_text(document)
         else:
             document = self.loaders[data_type](self.data).load()
