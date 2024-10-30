@@ -117,8 +117,8 @@ class Loaders:
             time.sleep(1)
 
     def audio_loader(self, path):
+        self.loader_status.info("Uploading audio file to GenerativeAI...")
         audio_file = genai.upload_file(path=path)
-        print("Uploading audio file to GenerativeAI...")
         prompt = """
         Please provide a detailed text for the audio.
         No need to provide timelines.
@@ -127,35 +127,40 @@ class Loaders:
         try:
             response = self.model.generate_content([audio_file, prompt])
             text_response = response.text  # Access the text property if response is valid
-            print("Audio extracted successfully, text:", text_response)
+            self.loader_status.info("Audio to text conversion successful!")
         except InternalServerError as e:
             print("An error occurred: ", e)
-            print("Triggering the big model...")
+            self.loader_status.info("An error occurred, triggering the big model...")
             response = self.big_model.generate_content([audio_file, prompt])
             text_response = response.text
-            print("Audio extracted successfully, text:", text_response)
+            self.loader_status.info("Audio to text conversion successful with bigger model!")
         except Exception as e:
             print("Failed to retrieve text from response:", e)
+            self.loader_status.error("Failed to convert audio to text.")
             text_response = " "
 
         return text_response
 
     def mp4_loader(self):
+        self.loader_status.info("Extracting audio from video...")
         try:
             video = VideoFileClip(self.data)
 
             # Sesi çıkarma ve kaydetme
             video.audio.write_audiofile("audio.mp3")
 
-            print(f"Audio extracted successfully and saved to audio.mp3")
+            self.loader_status.info(f"Audio extracted successfully and saved to audio.mp3")
             response = self.audio_loader("audio.mp3")
 
         except Exception as e:
             print(f"An error occurred: {e}")
+            self.loader_status.error("Failed to extract audio from video.")
             response = " "
+        time.sleep(1)
         return response
 
     def image_loader(self):
+        self.loader_status.info("Uploading image file to GenerativeAI...")
         image_file = genai.upload_file(path=self.data)
         prompt = """
                 You are a highly accurate text recognition assistant. Please extract all readable text from the image file provided. 
@@ -167,22 +172,27 @@ class Loaders:
         try:
             response = self.model.generate_content([image_file, prompt])
             text_response = response.text  # Access the text property if response is valid
-            print("Image extracted successfully, text:", text_response)
+            self.loader_status.info("Image extracted successfully!")
         except InternalServerError as e:
             print("An error occurred: ", e)
-            print("Triggering the big model...")
+            self.loader_status.info("An error occurred, triggering the big model...")
             response = self.big_model.generate_content([image_file, prompt])
             text_response = response.text
-            print("Image extracted successfully, text:", text_response)
+            self.loader_status.info("Image extracted successfully with bigger model!")
         except Exception as e:
             print("Failed to retrieve text from response:", e)
+            self.loader_status.error("Failed to extract text from image.")
             text_response = " "
+        time.sleep(1)
         return text_response
 
     def set_loaders(self):
         if self.data_type=="wiki":
+            self.loader_status.info("Extracting data from Wikipedia...")
             document = self.loaders[self.data_type](self.data, load_max_docs=2).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
+            self.loader_status.info("Wikipedia page loaded successfully")
+            time.sleep(1)
         elif self.data_type=="youtube":
             document, way = self.youtube_loader()
             if way == "transcript":
@@ -194,7 +204,10 @@ class Loaders:
             split_doc = self.text_splitter.split_text(document)
         elif self.data_type=="text":
             document = self.data
+            self.loader_status.info("Text file loaded successfully")
             split_doc = self.text_splitter.split_text(document)
+            time.sleep(1)
+            self.loader_status.info("Text file split successfully")
         elif self.data_type=="mp4":
             document = self.mp4_loader()
             split_doc = self.text_splitter.split_text(document)
@@ -202,9 +215,11 @@ class Loaders:
             document = self.image_loader()
             split_doc = self.text_splitter.split_text(document)
         else:
+            self.loader_status.info(f"Extracting data from {self.data_type} file...")
             document = self.loaders[self.data_type](self.data).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
-
+            self.loader_status.info(f"{self.data_type} file loaded successfully")
+            time.sleep(1)
         return split_doc
 
 
