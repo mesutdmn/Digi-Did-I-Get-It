@@ -30,7 +30,7 @@ class LLMs:
                                                 "explain": "A brief explanation of why the correct answer is correct."
                                             }}
 
-                                            Although this instruction is in English, provide the final output in the specified language.
+                                            Although this instruction is in English, provide the final output in the {language}.
 
                                             \n\nContext: {context}
                                             \n\nOutput Language: {language}
