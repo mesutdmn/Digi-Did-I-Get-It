@@ -117,7 +117,7 @@ class Loaders:
             time.sleep(1)
 
     def audio_loader(self, path):
-        self.loader_status.info("Uploading audio file to GenerativeAI...")
+        self.loader_status.info("Extracting text from audio...")
         audio_file = genai.upload_file(path=path)
         prompt = """
         Please provide a detailed text for the audio.
@@ -160,7 +160,7 @@ class Loaders:
         return response
 
     def image_loader(self):
-        self.loader_status.info("Uploading image file to GenerativeAI...")
+        self.loader_status.info("Extracting text from image...")
         image_file = genai.upload_file(path=self.data)
         prompt = """
                 You are a highly accurate text recognition assistant. Please extract all readable text from the image file provided. 
@@ -215,10 +215,10 @@ class Loaders:
             document = self.image_loader()
             split_doc = self.text_splitter.split_text(document)
         else:
-            self.loader_status.info(f"Extracting data from {self.data_type} file...")
+            self.loader_status.info(f"Extracting data from {str(self.data_type).upper()} file...")
             document = self.loaders[self.data_type](self.data).load()
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
-            self.loader_status.info(f"{self.data_type} file loaded successfully")
+            self.loader_status.info(f"{str(self.data_type).upper()} file loaded successfully")
             time.sleep(1)
         return split_doc
 
