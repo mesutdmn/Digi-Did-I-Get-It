@@ -14,6 +14,7 @@ yt_dlp
 streamlit
 python-magic
 unstructured
+unstructured[pdf]
 python-pptx
 docx2txt
 moviepy
