@@ -1,3 +1,4 @@
+from google.api_core.exceptions import InternalServerError
 from langchain_community.document_loaders import (
     PyPDFLoader, TextLoader,Docx2txtLoader,
     WebBaseLoader, WikipediaLoader,
@@ -6,17 +7,20 @@ from langchain_community.document_loaders import (
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from youtube_transcript_api import YouTubeTranscriptApi
 from utils import extract_youtube_id
-import google.generativeai as genai
 from moviepy.editor import VideoFileClip
 import yt_dlp
 import imageio_ffmpeg as ffmpeg
 import time
+import os
+import google.generativeai as genai
 
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 class Loaders:
     def __init__(self, data):
         self.data = data
         self.model = genai.GenerativeModel(model_name="gemini-1.5-flash-002")
+        self.big_model = genai.GenerativeModel(model_name="gemini-1.5-pro-002")
 
         self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=10000, chunk_overlap=0)
         self.loaders = {
@@ -51,14 +55,11 @@ class Loaders:
                     add_video_info=False,
                     language=available_languages[0],
                 ).load()
+                print("Transcript extracted successfully")
 
         except:
-            print("Extracting audio from YouTube video...")
+            print("Transcript Extracting Failed, Extracting audio from YouTube video...")
             way = "audio"
-            # path_audio = [audio.path for audio in
-            #               YoutubeAudioLoader(urls=[data],
-            #                                  save_dir=".").yield_blobs()]
-            # doc = self.audio_loader(path_audio[0])
             ffmpeg_path = ffmpeg.get_ffmpeg_exe()
             ydl_opts = {
                 'format': 'bestaudio/best',
@@ -73,7 +74,6 @@ class Loaders:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([data])
             doc = self.audio_loader("audio.mp3")
-        finally:
             print("Audio Extracted successfully")
 
         return doc, way
@@ -90,7 +90,13 @@ class Loaders:
             response = self.model.generate_content([audio_file, prompt])
             text_response = response.text  # Access the text property if response is valid
             print("Audio extracted successfully, text:", text_response)
-        except ValueError as e:
+        except InternalServerError as e:
+            print("An error occurred: ", e)
+            print("Triggering the big model...")
+            response = self.big_model.generate_content([audio_file, prompt])
+            text_response = response.text
+            print("Audio extracted successfully, text:", text_response)
+        except Exception as e:
             print("Failed to retrieve text from response:", e)
             text_response = " "
 
@@ -112,8 +118,28 @@ class Loaders:
         return response
 
     def image_loader(self, data):
-        response = self.model.generate_content(["Extract the text from image", data]).text
-        return response
+        image_file = genai.upload_file(path=data)
+        prompt = """
+                You are a highly accurate text recognition assistant. Please extract all readable text from the image file provided. 
+                Return only the text in a well-organized and clear format, preserving any distinct sections, titles, paragraphs, or lists. 
+                Make sure to include all visible text without omitting any details. 
+                If any text is hard to read, make your best effort to transcribe it accurately. 
+                Respond only with the extracted text, without adding additional explanations.
+                """
+        try:
+            response = self.model.generate_content([image_file, prompt])
+            text_response = response.text  # Access the text property if response is valid
+            print("Image extracted successfully, text:", text_response)
+        except InternalServerError as e:
+            print("An error occurred: ", e)
+            print("Triggering the big model...")
+            response = self.big_model.generate_content([image_file, prompt])
+            text_response = response.text
+            print("Image extracted successfully, text:", text_response)
+        except Exception as e:
+            print("Failed to retrieve text from response:", e)
+            text_response = " "
+        return text_response
 
     def set_loaders(self, data_type):
         if data_type=="wiki":

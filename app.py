@@ -1,9 +1,8 @@
 import streamlit as st
 from streamlit.components.v1 import html
-from utils import check_file_type
+
+from utils import check_file_type, create_pdf
 import uuid
-from graph import LLMs
-from question_format import TestModel
 from all_loaders import Loaders
 import tempfile
 import os
@@ -11,6 +10,7 @@ from dotenv import load_dotenv
 import random
 import base64
 import pypandoc
+from parallel_llm import parallel_process
 
 load_dotenv()
 
@@ -34,6 +34,9 @@ def script():
         open_script = f"""<script>{scripts.read()}</script> """
         html(open_script, width=0, height=0)
 
+def create_questions_pdf():
+    create_pdf(st.session_state.question_list_reorder)
+
 tab1, tab2, tab3 = st.tabs([" ", " ", " "])
 
 data_types_dict = {"pdf":"pdf","mp3":"audio","wav":"audio","enex":"enex","mp4":"mp4","docx":"docx","png":"image","jpg":"image","jpeg":"image","pptx":"pptx","epub":"epub","txt":"txt"}
@@ -55,29 +58,30 @@ if 'question_index' not in st.session_state:
     st.session_state.show_questions = False
 
 
-
 def send_answer():
     with tab2:
 
         if st.session_state.choice is not None:
             selected_answer_index = st.session_state.question['choices'].index(st.session_state.choice)
             if st.session_state.question['answers'][selected_answer_index]:
-                st.success("Tebrikler Doğru bildiniz!")
+                st.success("Congratulations, you answered correctly!")
                 st.session_state.correct_count += 1
             else:
-                st.error("Doğru cevap: " + st.session_state.question['choices'][st.session_state.question['answers'].index(True)])
-            st.warning(f"Açıklama: {st.session_state.question['explain']}")
+                st.error("Correct answer: " + st.session_state.question['choices'][
+                    st.session_state.question['answers'].index(True)])
+            st.warning(f"Explanation: {st.session_state.question['explain']}")
             st.session_state.answered = True
 
 
 
 def show_question():
     st.session_state.question = st.session_state.question_list_reorder[st.session_state.question_index]
-    st.write(f"Soru {st.session_state.question_index + 1}: {st.session_state.question['question']}")
+    st.write(f"Question {st.session_state.question_index + 1}: {st.session_state.question['question']}")
 
-    st.session_state.choice = st.radio("Seçenekler:", st.session_state.question['choices'], disabled=st.session_state.answered)
+    st.session_state.choice = st.radio("Options:", st.session_state.question['choices'], disabled=st.session_state.answered)
 
-    st.button("Cevabı Gönder", on_click=send_answer, disabled=st.session_state.answered)
+    st.button("Submit Answer", on_click=send_answer, disabled=st.session_state.answered)
+
 
 
 def reset_exam():
@@ -105,7 +109,7 @@ def clean_components():
     st.session_state.key_id = uuid.uuid4()
 
 def calculate_results():
-    result_markdown.markdown(f"Sınav sona erdi. İşte sonuçlarınız:\n Toplam soru sayısı: {len(st.session_state.question_list_reorder)} \n Doğru sayısı: {st.session_state.correct_count}")
+    result_markdown.markdown(f"The exam is over. Here are your results:\n Total number of questions: {len(st.session_state.question_list_reorder)} \n Number of correct answers: {st.session_state.correct_count}")
 
 with tab2:
     back, forward = st.columns(2)
@@ -117,27 +121,21 @@ with tab2:
     status = st.empty()
     p_bar = st.empty()
 
+
 def define_llm(data, data_type, data_name, situation=""):
-    st.session_state.question_list = []
     loader = Loaders(data)
     status.info(f"Status: {situation}")
     data = loader.set_loaders(data_type)
-    llm = LLMs()
-    len_data = len(data)
-    for i, doc in enumerate(data ,1):
-        p_bar.progress(value=i/len_data, text=f"Questions Loading for Data: {data_name}: {i}/{len_data}")
-        try:
-            response = llm.question_maker({"context": doc, "language": "Turkish"})
-            TestModel(**response)
-            st.session_state.question_list.append(response)
-        except Exception as e:
-            print("Error occurred while Testing Model questions.",e)
-            continue
-    st.session_state.question_list_reorder += [question for questions in st.session_state.question_list for question in questions["test"]["questions"]]
+
+    shared_list = parallel_process(data, data_name, p_bar)
+    st.session_state.question_list_reorder += list(shared_list)
+
+    print("Questions are generated successfully.")
 
 def return_random_questions():
     st.session_state.question_list_reorder = random.sample(st.session_state.question_list_reorder, st.session_state.user_request)
     st.session_state.show_questions = True
+
 def load_components(key_id):
     file_upload.file_uploader("Upload File", type=["pdf","txt","mp3","wav","enex","mp4","docx","png","jpg","pptx","epub"],
                                      accept_multiple_files=True, key=str(key_id)+"files")
@@ -213,10 +211,10 @@ with tab1:
 
 
 with tab2:
-    if st.session_state.show_questions & (st.session_state.question_index < len(st.session_state.question_list_reorder)):
+    if st.session_state.show_questions and (st.session_state.question_index < len(st.session_state.question_list_reorder)):
         show_question()
-        if st.session_state.question_index +1 < len(st.session_state.question_list_reorder):
-            st.button("Sonraki Soru", on_click=next_question, disabled= not st.session_state.answered)
+        if st.session_state.question_index + 1 < len(st.session_state.question_list_reorder):
+            st.button("Next Question", on_click=next_question, disabled=not st.session_state.answered)
     else:
         st.warning("There is no question to show.")
 
@@ -227,7 +225,7 @@ with tab2:
         st.write(f"I have Total {total_q_count} questions for you!")
 
         st.number_input("How many questions do you want to answer?", min_value=1,
-                                           max_value=total_q_count, step=1, on_change=return_random_questions, key="user_request")
+                                           max_value=total_q_count, step=None, on_change=return_random_questions, key="user_request")
 
     elif (len(st.session_state.question_list_reorder) == 0) & submit_data:
         st.warning("Couldn't generate any questions. Please try again with different data.")
@@ -242,12 +240,27 @@ with tab3:
               disabled = not (st.session_state.question_index +1 == len(st.session_state.question_list_reorder)),
               help="You can retake the exam after you finish the exam.")
 
-    if st.session_state.question_index +1 == len(st.session_state.question_list_reorder):
+    if st.session_state.question_index + 1 == len(st.session_state.question_list_reorder):
         result_markdown = st.empty()
-        st.write("Sınav sona erdi. İşte sonuçlarınız:")
-        st.write(f"Toplam soru sayısı: {len(st.session_state.question_list_reorder)}")
-        st.write(f"Doğru sayısı: {st.session_state.correct_count}")
+        st.write("The exam has ended. Here are your results:")
+        st.write(f"Total number of questions: {len(st.session_state.question_list_reorder)}")
+        st.write(f"Number of correct answers: {st.session_state.correct_count}")
+        create_questions_pdf()
+        with open("questions.pdf", "rb") as file:
+            file_bytes = file.read()
+
+        col3, col4 = st.columns(2)
+        # PDF indirme butonu
+        col3.download_button(
+            label="Download Questions",
+            data=file_bytes,
+            file_name="questions.pdf",
+            mime="application/pdf",
+            icon="📄",
+            type="primary",
+            use_container_width=True,
+        )
     else:
-        st.warning("Sınav bitmedi. Lütfen tüm soruları yanıtlayınız.")
+        st.warning("The exam is not over. Please answer all the questions.")
 
 script()

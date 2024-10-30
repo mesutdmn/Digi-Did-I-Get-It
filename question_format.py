@@ -31,8 +31,3 @@ class Test(BaseModel):
     questions: List[Question] = Field(...,
                                       description="A list of questions containing the question text, choices, answers, and explanations.")
     # Contains a list of `Question` objects, each holding the question text, choices, answers, and explanation for that question.
-
-
-class TestModel(BaseModel):
-    test: Test = Field(..., description="The outermost structure containing the test with its questions.")
-    # The root object that contains the `Test` object, which in turn contains multiple questions.

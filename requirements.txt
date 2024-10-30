@@ -20,3 +20,4 @@ moviepy
 wikipedia
 imageio-ffmpeg
 pypandoc
+reportlab

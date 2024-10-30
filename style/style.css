@@ -29,5 +29,6 @@ div[data-testid="stFileUploaderPagination"] > div {{background: None; color: bla
 div[data-testid="stTabs"]{{padding: 20px; border-radius: 2rem; background: rgba(255,255,255,0.7);}}
 div[data-testid = "stMarkdownContainer"] > p {{color: black; font-size: 15px; font-weight: bold;}}
 div[data-baseweb="tooltip"] >  div {{background: rgba(255,255,255,0.7); color: black;}}
-.stButton:nth-of-type(-n+6) > div > div > div > button > div > p {{color: white;}}
 button[kind=secondary]{{background: rgba(0,0,255,0.7); color: white;}}
+div[data-testid = "stButton"] div > div > div > button {{background: rgba(0,255,0,0.3); color: white;}}
+div[data-testid="stNumberInputContainer"] > div:nth-of-type(2) {{display: none;}}
