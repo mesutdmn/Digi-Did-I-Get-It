@@ -8,7 +8,7 @@ from threading import Lock
 lock = Lock()
 def process_doc(doc, language_input, shared_list):
     llm = LLMs()
-
+    print(language_input)
     try:
         response = llm.question_maker({"context": doc, "language": language_input})["questions"]
         response = shuffle_choices(response)
