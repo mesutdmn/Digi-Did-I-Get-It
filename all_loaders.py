@@ -86,8 +86,6 @@ class Loaders:
 
                 doc = self.audio_loader("audio.mp3")
                 self.loader_status.info("Audio extracted successfully.")
-                time.sleep(2)
-                self.loader_status.info("Sending audio to GenerativeAI for text extraction...")
 
         except Exception as e:
             self.loader_status.error(f"An unexpected error occurred: {str(e)}")
@@ -172,13 +170,13 @@ class Loaders:
         try:
             response = self.model.generate_content([image_file, prompt])
             text_response = response.text  # Access the text property if response is valid
-            self.loader_status.info("Image extracted successfully!")
+            self.loader_status.info("Text extracted successfully!")
         except InternalServerError as e:
             print("An error occurred: ", e)
             self.loader_status.info("An error occurred, triggering the big model...")
             response = self.big_model.generate_content([image_file, prompt])
             text_response = response.text
-            self.loader_status.info("Image extracted successfully with bigger model!")
+            self.loader_status.info("Text extracted successfully with bigger model!")
         except Exception as e:
             print("Failed to retrieve text from response:", e)
             self.loader_status.error("Failed to extract text from image.")
@@ -220,6 +218,8 @@ class Loaders:
             split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
             self.loader_status.info(f"{str(self.data_type).upper()} file loaded successfully")
             time.sleep(1)
+        time.sleep(1)
+        self.loader_status.info("Sending Data to the Model...")
         return split_doc
 
 
