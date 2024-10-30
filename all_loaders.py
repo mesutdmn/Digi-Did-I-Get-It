@@ -62,26 +62,30 @@ class Loaders:
                     ).load()
                     self.loader_status.info("Transcript extracted successfully.")
                 except Exception as e:
-                    self.loader_status.warning(f"Attempt {attempt} failed: {str(e)}. Retrying...")
+                    self.loader_status.warning(f"Attempt {attempt} failed. Retrying...")
+
+            if len(doc) == 0:  # If still no document after 3 attempts, switch to audio extraction
+                self.loader_status.info("Transcript extracting failed, trying to extract audio from YouTube video...")
+                way = "audio"
+                ffmpeg_path = ffmpeg.get_ffmpeg_exe()
+                ydl_opts = {
+                    'format': 'bestaudio/best',
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '128',
+                    }],
+                    'outtmpl': 'audio.%(ext)s',
+                    'ffmpeg_location': ffmpeg_path
+                }
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([self.data])
+                doc = self.audio_loader("audio.mp3")
+                self.loader_status.info("Audio extracted successfully.")
 
         except Exception as e:
-            self.loader_status.info("Transcript Extracting Failed, Trying to extracting audio from YouTube video..")
-            way = "audio"
-            ffmpeg_path = ffmpeg.get_ffmpeg_exe()
-            ydl_opts = {
-                'format': 'bestaudio/best',
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '128',
-                }],
-                'outtmpl': 'audio.%(ext)s',
-                'ffmpeg_location': ffmpeg_path
-            }
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([self.data])
-            doc = self.audio_loader("audio.mp3")
-            self.loader_status.info("Audio Extracted successfully.")
+            doc = ""
+            self.loader_status.error(f"An unexpected error occurred: {str(e)}")
 
         return doc, way
 
