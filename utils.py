@@ -121,8 +121,6 @@ def create_pdf(data):
             ))
             choices_data.append([choice_paragraph])
 
-        choices_table = Table(choices_data, colWidths=[280])
-
         if index % 2 == 1:
             main_table_data.append([choices_data, ""])
         else:
