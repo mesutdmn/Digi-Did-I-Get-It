@@ -24,7 +24,7 @@ class Loaders:
         self.model = genai.GenerativeModel(model_name="gemini-1.5-flash-002")
         self.big_model = genai.GenerativeModel(model_name="gemini-1.5-pro-002")
 
-        self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=10000, chunk_overlap=0)
+        self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=5000, chunk_overlap=0)
         self.loaders = {
             "pdf": PyPDFLoader,
             "txt": TextLoader,

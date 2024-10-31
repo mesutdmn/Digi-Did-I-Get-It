@@ -22,3 +22,5 @@ wikipedia
 imageio-ffmpeg
 pypandoc
 reportlab
+markdown2
+langgraph
