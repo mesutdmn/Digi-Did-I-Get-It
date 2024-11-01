@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import List
+from typing import List, Literal
 
 class Question(BaseModel):
     question: str = Field(..., description="The text of the question being asked.")
@@ -31,3 +31,10 @@ class Test(BaseModel):
     questions: List[Question] = Field(...,
                                       description="A list of questions containing the question text, choices, answers, and explanations.")
     # Contains a list of `Question` objects, each holding the question text, choices, answers, and explanation for that question.
+
+
+class AskLLM(BaseModel):
+    """Answer the question, only True or False allowed."""
+    answer: Literal[True,False] = Field(...,
+                                        description="Answer to the question asked by the user.")
+

@@ -10,6 +10,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_search import YoutubeSearch
 from utils import extract_youtube_id
+from graph import HelperLLM
 from moviepy.editor import VideoFileClip
 import yt_dlp
 import imageio_ffmpeg as ffmpeg
@@ -18,6 +19,7 @@ import os
 import google.generativeai as genai
 import requests
 import base64
+
 
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -29,6 +31,9 @@ class Loaders:
         self.loader_status = loader_status
         self.spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID")
         self.spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+        self.helper_llm = HelperLLM()
+        self.answer = ""
+        self.status = False
 
         self.model = genai.GenerativeModel(model_name="gemini-1.5-flash-002")
         self.big_model = genai.GenerativeModel(model_name="gemini-1.5-pro-002")
@@ -49,12 +54,12 @@ class Loaders:
 
     def youtube_loader(self, video_id):
         way = "transcript"
-        doc = ""
+        document = ""
         attempt = 0
         try:
             self.loader_status.info("🛠️ Extracting transcript from YouTube video is starting...")
             time.sleep(1)
-            while (len(doc) == 0) and (attempt < 3):
+            while (len(document) == 0) and (attempt < 3):
                 attempt += 1
                 self.loader_status.info(f"📌 Extracting transcript from YouTube video... Attempt: {attempt}")
                 time.sleep(1)
@@ -62,18 +67,18 @@ class Loaders:
                     transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
                     available_languages = [trans.language_code for trans in transcript_languages]
 
-                    doc = self.loaders["youtube"].from_youtube_url(
+                    document = self.loaders["youtube"].from_youtube_url(
                         youtube_url=f"https://www.youtube.com/watch?v={video_id}",
                         add_video_info=False,
                         language=available_languages[0],
                     ).load()
                     self.loader_status.info("📑 Transcript extracted successfully.")
-                    time.sleep(1)
+                    self.status = True
                 except Exception as e:
                     self.loader_status.warning(f"🤯 Attempt {attempt} failed. Retrying...")
                     time.sleep(1)
 
-            if len(doc) == 0:  # If still no document after 3 attempts, switch to audio extraction
+            if len(document) == 0:  # If still no document after 3 attempts, switch to audio extraction
                 self.loader_status.info("😢 Transcript extracting failed, but...")
                 time.sleep(2)
                 self.loader_status.info("💪 Trying to extract audio from YouTube video...")
@@ -95,13 +100,19 @@ class Loaders:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([f"https://www.youtube.com/watch?v={video_id}"])
 
-                doc = self.audio_loader("audio.mp3")
+                document = self.audio_loader("audio.mp3")
                 self.loader_status.info("✅ Audio extracted successfully.")
 
         except Exception as e:
             self.loader_status.error(f"😢 An unexpected error occurred: {str(e)}")
-            doc = ""
-        return doc, way
+            document = ""
+
+        if way == "transcript":
+            split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
+        else:
+            split_doc = self.text_splitter.split_text(document)
+
+        return split_doc
 
     def progress_hook(self, d):
         if d['status'] == 'downloading':
@@ -133,8 +144,9 @@ class Loaders:
         """
         try:
             response = self.model.generate_content([audio_file, prompt])
-            text_response = response.text  # Access the text property if response is valid
+            text_response = response.text
             self.loader_status.info("✅ Audio to text conversion successful!")
+            self.status = True
         except InternalServerError as e:
             print("An error occurred: ", e)
             self.loader_status.info("🤯 An error occurred, triggering the big model...")
@@ -180,6 +192,8 @@ class Loaders:
             response = self.model.generate_content([image_file, prompt])
             text_response = response.text  # Access the text property if response is valid
             self.loader_status.info("✅ Text extracted successfully!")
+            self.status = True
+
         except InternalServerError as e:
             print("An error occurred: ", e)
             self.loader_status.info("🤯 An error occurred, triggering the big model...")
@@ -221,62 +235,141 @@ class Loaders:
             print(f"Error: {response.status_code} - {response.text}")
             return None
 
+    def spotify_loader(self):
+        self.loader_status.info("🛠️ Extracting data from Spotify...")
+        access_token = self.get_access_token(self.spotify_client_id, self.spotify_client_secret)
+        episode_id = self.data.split("/")[-1]
+        title = self.get_podcast_title(episode_id, access_token)
+        self.loader_status.info(f"🔎 Podcast title: {title}")
+        time.sleep(1)
+
+        if title is None:
+            self.loader_status.error("😓 Failed to extract podcast title, be sure it has a valid Spotify 'episode' URL.")
+            self.status = False
+            return None
+        else:
+            video_id = YoutubeSearch(f"{title}", max_results=1).to_dict()[0]["id"]
+            video_title = YoutubeSearch(f"{title}", max_results=1).to_dict()[0]["title"]
+            question = f"""{title} and {video_title} same content?"""
+            self.answer = self.helper_llm.ask_llm(question)
+            if self.answer:
+                self.status = True
+
+                return video_id
+            else:
+                self.loader_status.error("😓 Failed to find a suitable audio-text for the podcast.")
+                video_id = None
+                self.status = False
+
+                return video_id
+
+    def other_loader(self):
+        self.loader_status.info("🛠️ Extracting data from other sources...")
+        document = self.loaders[self.data_type](self.data).load()
+        split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
+        self.loader_status.info(f"✅ {str(self.data_type).upper()} file loaded successfully")
+        self.status = True
+        return split_doc
+
 
     def set_loaders(self):
         if self.data_type=="wiki":
-            self.loader_status.info("🛠️ Extracting data from Wikipedia...")
-            document = self.loaders[self.data_type](self.data, load_max_docs=2).load()
-            split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
-            self.loader_status.info("✅ Wikipedia page loaded successfully")
-            time.sleep(1)
-        elif self.data_type=="youtube":
-            video_id = extract_youtube_id(self.data)
-            document, way = self.youtube_loader(video_id)
-            if way == "transcript":
-                split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
-            else:
-                split_doc = self.text_splitter.split_text(document)
-        elif self.data_type=="audio":
-            document = self.audio_loader(self.data)
-            split_doc = self.text_splitter.split_text(document)
-        elif self.data_type=="text":
-            document = self.data
-            self.loader_status.info("✅ Text file loaded successfully")
-            split_doc = self.text_splitter.split_text(document)
-            time.sleep(1)
-            self.loader_status.info("✅ Text file split successfully")
-        elif self.data_type=="mp4":
-            document = self.mp4_loader()
-            split_doc = self.text_splitter.split_text(document)
-        elif self.data_type=="image":
-            document = self.image_loader()
-            split_doc = self.text_splitter.split_text(document)
-        elif self.data_type=="spotify":
-            self.loader_status.info("🛠️ Extracting data from Spotify...")
-            access_token = self.get_access_token(self.spotify_client_id, self.spotify_client_secret)
-            episode_id = self.data.split("/")[-1]
-            title = self.get_podcast_title(episode_id, access_token)
-            self.loader_status.info(f"🔎 Podcast title: {title}")
-            time.sleep(1)
-            if title is None:
-                self.loader_status.error("😓 Failed to extract podcast title, be sure it has a valid Spotify 'episode' URL.")
-                split_doc = ""
-            else:
-                video_id = YoutubeSearch(f"{title}", max_results=1).to_dict()[0]["id"]
-                document, way = self.youtube_loader(video_id)
-                if way == "transcript":
+            if self.helper_llm.ask_llm(f"Is this something searchable on Wikipedia?\n{self.data}"):
+                try:
+                    self.loader_status.info("🛠️ Extracting data from Wikipedia...")
+                    document = self.loaders[self.data_type](self.data, load_max_docs=2).load()
                     split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
-                else:
-                    split_doc = self.text_splitter.split_text(document)
-        else:
-            self.loader_status.info(f"🛠 Extracting data from {str(self.data_type).upper()} file...")
-            document = self.loaders[self.data_type](self.data).load()
-            split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
-            self.loader_status.info(f"✅ {str(self.data_type).upper()} file loaded successfully")
-            time.sleep(1)
-        time.sleep(1)
-        self.loader_status.info("🤖 Sending Data to the Model...")
+                    self.loader_status.info("✅ Wikipedia page loaded successfully")
+                    time.sleep(1)
+                    self.status=True
+                except Exception as e:
+                    self.loader_status.error("😓 Failed to load Wikipedia page.")
+                    split_doc = " "
+            else:
+                self.loader_status.error("❌ That is not something searchable on Wikipedia.")
+                split_doc = " "
 
+        elif self.data_type=="youtube":
+            if self.helper_llm.ask_llm(f"Is this a YouTube link?\n{self.data}"):
+                try:
+                    video_id = extract_youtube_id(self.data)
+                    split_doc = self.youtube_loader(video_id)
+                    time.sleep(1)
+                    self.loader_status.info("🤖 Sending Data to the Model...")
+                    self.status = True
+                except Exception as e:
+                    self.loader_status.error("😓 Failed to load YouTube video.")
+                    split_doc = " "
+            else:
+                self.loader_status.error("❌ That is not a YouTube link.")
+                split_doc = " "
+
+        elif self.data_type=="audio":
+            try:
+                document = self.audio_loader(self.data)
+                split_doc = self.text_splitter.split_text(document)
+                time.sleep(1)
+            except Exception as e:
+                self.loader_status.error("😓 Failed to load audio file.")
+                split_doc = " "
+
+        elif self.data_type=="text":
+            try:
+                self.loader_status.info("🛠️ Loading text file...")
+                time.sleep(1)
+                self.loader_status.info("✅ Text file loaded successfully")
+                split_doc = self.text_splitter.split_text(self.data)
+
+                time.sleep(1)
+
+                self.loader_status.info("✅ Text file split successfully")
+                self.status = True
+            except Exception as e:
+                self.loader_status.error("😓 Failed to load text file.")
+                split_doc = " "
+
+        elif self.data_type=="mp4":
+            try:
+                document = self.mp4_loader()
+                split_doc = self.text_splitter.split_text(document)
+                time.sleep(1)
+            except Exception as e:
+                self.loader_status.error("😓 Failed to load video file.")
+                split_doc = " "
+
+        elif self.data_type=="image":
+            try:
+                document = self.image_loader()
+                split_doc = self.text_splitter.split_text(document)
+                time.sleep(1)
+            except Exception as e:
+                self.loader_status.error("😓 Failed to load image file.")
+                split_doc = " "
+
+        elif self.data_type=="spotify":
+            if self.helper_llm.ask_llm(f"Is this a Spotify podcast link?\n{self.data}"):
+                try:
+                    video_id = self.spotify_loader()
+                    if self.status:
+                        split_doc = self.youtube_loader(video_id)
+                    else:
+                        split_doc = " "
+                except Exception as e:
+                    self.loader_status.error("😓 Failed to load Spotify podcast.")
+                    split_doc = " "
+            else:
+                self.loader_status.error("❌ That is not a Spotify podcast link.")
+                split_doc = " "
+        else:
+            try:
+                split_doc = self.other_loader()
+            except Exception as e:
+                self.loader_status.error("😓 Failed to load file.")
+                split_doc = " "
+
+        time.sleep(1)
+        if self.status:
+            self.loader_status.info("🤖 Sending Data to the Model...")
         return split_doc
 
 
