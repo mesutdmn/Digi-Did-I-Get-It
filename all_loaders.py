@@ -117,17 +117,14 @@ class Loaders:
 
     def post_progress_hook(self, d):
         if d['status'] == 'started':
-            self.loader_status.info(f"⏳ Started post-processing, this may take a while..2min for 1hr video")
+            self.loader_status.info(f"⏳ Started {d["postprocessor"]}, this might take a while..")
             time.sleep(1)
         elif d['status'] == 'finished':
             self.loader_status.info(f"✅ Post-processing finished!")
             time.sleep(1)
-        else:
-            self.loader_status.info(f"⏳ Post-processing...")
-            time.sleep(1)
 
     def audio_loader(self, path):
-        self.loader_status.info("⏳ Extracting text from audio, this may take a while...2min for 1hr audio")
+        self.loader_status.info("⏳ Extracting text from audio, this might take a while...")
         audio_file = genai.upload_file(path=path)
         prompt = """
         Please provide a detailed text for the audio.
