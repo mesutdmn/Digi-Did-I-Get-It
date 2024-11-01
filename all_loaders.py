@@ -55,10 +55,9 @@ class Loaders:
             self.loader_status.info("🛠️ Extracting transcript from YouTube video is starting...")
             time.sleep(1)
             while (len(doc) == 0) and (attempt < 3):
-                time.sleep(2)
                 attempt += 1
                 self.loader_status.info(f"📌 Extracting transcript from YouTube video... Attempt: {attempt}")
-
+                time.sleep(1)
                 try:
                     transcript_languages = YouTubeTranscriptApi.list_transcripts(video_id)
                     available_languages = [trans.language_code for trans in transcript_languages]
@@ -118,17 +117,17 @@ class Loaders:
 
     def post_progress_hook(self, d):
         if d['status'] == 'started':
-            self.loader_status.info(f"⏳ Started post-processing")
-            time.sleep(1)
-        elif d['status'] == 'processing':
-            self.loader_status.info(f"⏳ Post-processing...")
+            self.loader_status.info(f"⏳ Started post-processing, this may take a while..2min for 1hr video")
             time.sleep(1)
         elif d['status'] == 'finished':
             self.loader_status.info(f"✅ Post-processing finished!")
             time.sleep(1)
+        else:
+            self.loader_status.info(f"⏳ Post-processing...")
+            time.sleep(1)
 
     def audio_loader(self, path):
-        self.loader_status.info("⏳ Extracting text from audio...")
+        self.loader_status.info("⏳ Extracting text from audio, this may take a while...2min for 1hr audio")
         audio_file = genai.upload_file(path=path)
         prompt = """
         Please provide a detailed text for the audio.

@@ -43,7 +43,12 @@ def create_questions_pdf():
 
 tab1, tab2, tab3 = st.tabs([" ", " ", " "])
 
-data_types_dict = {"pdf":"pdf","mp3":"audio","wav":"audio","enex":"enex","mp4":"mp4","docx":"docx","png":"image","jpg":"image","jpeg":"image","pptx":"pptx","epub":"epub","txt":"txt"}
+data_types_dict = {"pdf":"pdf","mp3":"audio",
+                   "wav":"audio","enex":"enex",
+                   "mp4":"mp4","docx":"docx",
+                   "png":"image","jpg":"image",
+                   "jpeg":"image","pptx":"pptx",
+                   "epub":"epub","txt":"txt"}
 
 if "data" not in st.session_state:
     st.session_state.data = {}
@@ -167,22 +172,42 @@ def return_random_questions():
 
 def load_components(key_id):
     file_upload.file_uploader("Upload File", type=["pdf","txt","mp3","wav","enex","mp4","docx","png","jpg","pptx","epub"],
-                                     accept_multiple_files=True, key=str(key_id)+"files")
-    url_upload.text_input("URL",
-                               placeholder="https://medium.com/@dumanmesut/building-autonomous-multi-agent-systems-with-crewai-1a3b3a348271", key=str(key_id)+"url")
-    youtube_upload.text_input("Youtube URL", placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ", key=str(key_id)+"youtube")
-    spotify_upload.text_input("Spotify Podcast", placeholder="https://open.spotify.com/episode/6KBpL2XfR9VdojbKNpE7cX?si=fef460b37e7c45eb",
-                              key=str(key_id)+"spotify", help="Please provide the Spotify Podcast URL. (There should be episode in the middle)")
-    wikipedia_search.text_input("Wikipedia Search", placeholder="Artificial Intelligence", key=str(key_id)+"wiki")
-    text_input.text_area("Direct Text Input", placeholder="Langchain is a platform that provides a suite of tools for developers to build and deploy AI models. "
+                                     accept_multiple_files=True, key=str(key_id)+"files", help="Please upload your document file")
+    url_upload.text_input(label="URL",
+                          placeholder="https://medium.com/@dumanmesut/building-autonomous-multi-agent-systems-with-crewai-1a3b3a348271",
+                          key=str(key_id)+"url",
+                          help="Please provide the URL of the document you want to generate questions from.")
+
+    youtube_upload.text_input(label="Youtube URL",
+                              placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                              key=str(key_id)+"youtube",
+                              help="Please provide a valid Youtube URL.")
+
+    spotify_upload.text_input(label="Spotify Podcast",
+                              placeholder="https://open.spotify.com/episode/6KBpL2XfR9VdojbKNpE7cX?si=fef460b37e7c45eb",
+                              key=str(key_id)+"spotify",
+                              help="Please provide the Spotify Podcast URL. (There should be episode in the middle)")
+
+    wikipedia_search.text_input(label="Wikipedia Search",
+                                placeholder="Artificial Intelligence",
+                                key=str(key_id)+"wiki",
+                                help="Please provide the search term for Wikipedia.")
+
+    text_input.text_area(label="Direct Text Input",
+                         placeholder="Langchain is a platform that provides a suite of tools for developers to build and deploy AI models. "
                                                                "The platform is designed to be easy to use and flexible, allowing developers to create custom models "
                                                                "for a wide range of applications. Langchain provides a range of pre-trained models that can be used "
                                                                "out of the box, as well as tools for training custom models on your own data. The platform is built on "
                                                                "top of the latest research in AI and machine learning, and is designed to be scalable and efficient, "
-                                                               "allowing developers to build and deploy models quickly and easily.", key=str(key_id)+"text")
-    language_input.selectbox("In which language do you prefer questions?", ["Same as provided document","Turkish", "English", "German", "French", "Spanish", "Italian",
+                                                               "allowing developers to build and deploy models quickly and easily.",
+                         key=str(key_id)+"text",
+                         help="Please provide the text you want to generate questions from.")
+
+    language_input.selectbox(label="In which language do you prefer questions?",
+                             options=["Same as provided document","Turkish", "English", "German", "French", "Spanish", "Italian",
                                           "Portuguese", "Dutch", "Russian", "Chinese", "Japanese", "Korean"],
-                             key=str(key_id)+"lang")
+                             key=str(key_id)+"lang",
+                             help="Please select the language you want to generate questions in.")
 with tab1:
     back, forward = st.columns(2)
     back.button("◄ Forward to Results ", type="secondary", use_container_width=True)
