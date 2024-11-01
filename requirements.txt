@@ -24,3 +24,4 @@ pypandoc
 reportlab
 markdown2
 langgraph
+youtube_search

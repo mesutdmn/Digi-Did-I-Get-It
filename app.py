@@ -16,6 +16,9 @@ from graph import QuestionGraph, ReportGraph
 load_dotenv()
 
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+os.environ["SPOTIFY_CLIENT_ID"] = st.secrets["SPOTIFY_CLIENT_ID"]
+os.environ["SPOTIFY_CLIENT_SECRET"] = st.secrets["SPOTIFY_CLIENT_SECRET"]
+
 
 st.set_page_config(page_title="Digi", page_icon="🤖")
 
@@ -89,7 +92,7 @@ def show_question():
 
     st.session_state.choice = st.radio("Options: ",st.session_state.question['choices'], disabled=st.session_state.answered, label_visibility="collapsed")
 
-    st.button("Submit Answer", on_click=send_answer, disabled=st.session_state.answered)
+    st.button("Submit Answer", type="primary", on_click=send_answer, disabled=st.session_state.answered)
 
 
 
@@ -104,6 +107,7 @@ def reset_exam():
     st.session_state.answer_list = []
     st.session_state.requested_language = ""
     st.session_state.report_created= True
+    st.session_state.report = ""
 
 
 def next_question():
@@ -116,6 +120,8 @@ def take_again():
     st.session_state.correct_count = 0
     st.session_state.answered = False
     st.session_state.answer_list = []
+    st.session_state.report_created = True
+    st.session_state.report = ""
 
 
 def clean_components():
@@ -165,6 +171,8 @@ def load_components(key_id):
     url_upload.text_input("URL",
                                placeholder="https://medium.com/@dumanmesut/building-autonomous-multi-agent-systems-with-crewai-1a3b3a348271", key=str(key_id)+"url")
     youtube_upload.text_input("Youtube URL", placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ", key=str(key_id)+"youtube")
+    spotify_upload.text_input("Spotify Podcast", placeholder="https://open.spotify.com/episode/6KBpL2XfR9VdojbKNpE7cX?si=fef460b37e7c45eb",
+                              key=str(key_id)+"spotify", help="Please provide the Spotify Podcast URL. (There should be episode in the middle)")
     wikipedia_search.text_input("Wikipedia Search", placeholder="Artificial Intelligence", key=str(key_id)+"wiki")
     text_input.text_area("Direct Text Input", placeholder="Langchain is a platform that provides a suite of tools for developers to build and deploy AI models. "
                                                                "The platform is designed to be easy to use and flexible, allowing developers to create custom models "
@@ -182,6 +190,7 @@ with tab1:
     file_upload = st.empty()
     url_upload = st.empty()
     youtube_upload = st.empty()
+    spotify_upload = st.empty()
     wikipedia_search = st.empty()
     text_input = st.empty()
     language_input = st.empty()
@@ -197,7 +206,8 @@ with tab1:
     if submit_data:
         uploads = st.session_state.get(str(st.session_state.key_id) + "files")
         url = st.session_state.get(str(st.session_state.key_id) + "url")
-        yutube = st.session_state.get(str(st.session_state.key_id) + "youtube")
+        youtube = st.session_state.get(str(st.session_state.key_id) + "youtube")
+        spotify = st.session_state.get(str(st.session_state.key_id) + "spotify")
         wikipedia_search = st.session_state.get(str(st.session_state.key_id) + "wiki")
         text_input = st.session_state.get(str(st.session_state.key_id) + "text")
         requested_language = st.session_state.get(str(st.session_state.key_id) + "lang")
@@ -224,9 +234,13 @@ with tab1:
             st.session_state.data["url"] = [url]
             define_llm(data=[url], data_type="url", data_name=url, language_input=requested_language)
 
-        if len(yutube) > 0:
-            st.session_state.data["youtube"] = yutube
-            define_llm(data=yutube, data_type="youtube", data_name=yutube, language_input=requested_language)
+        if len(youtube) > 0:
+            st.session_state.data["youtube"] = youtube
+            define_llm(data=youtube, data_type="youtube", data_name=youtube, language_input=requested_language)
+
+        if len(spotify) > 0:
+            st.session_state.data["spotify"] = spotify
+            define_llm(data=spotify, data_type="spotify", data_name=spotify, language_input=requested_language)
 
         if len(wikipedia_search) > 0:
             st.session_state.data["wiki"] = wikipedia_search
@@ -265,15 +279,14 @@ with tab3:
     back, forward = st.columns(2)
     back.button("◄ Back to Questions", type="secondary", use_container_width=True)
     forward.button("Forward to Data Entry ►", type="primary", use_container_width=True)
-    st.button("Re-Take The Exam", use_container_width=True, on_click=take_again,
+    st.button("↻ Re-Take The Exam ↺", use_container_width=True, on_click=take_again,
               disabled = not (st.session_state.question_index +1 == len(st.session_state.question_list_reorder)),
               help="You can retake the exam after you finish the exam.")
 
     if st.session_state.question_index + 1 == len(st.session_state.question_list_reorder):
         result_markdown = st.empty()
-        if st.session_state.report_created:
-            st.button("Create Report", use_container_width=True, on_click=create_report)
         result_markdown.markdown(st.session_state.report, unsafe_allow_html=True)
+
         create_questions_pdf()
         with open("questions.pdf", "rb") as file:
             file_bytes = file.read()
@@ -281,14 +294,15 @@ with tab3:
         col3, col4 = st.columns(2)
         # PDF indirme butonu
         col3.download_button(
-            label="Download Questions",
+            label="▼ Download Questions ▼",
             data=file_bytes,
             file_name="questions.pdf",
             mime="application/pdf",
-            icon="📄",
             type="primary",
             use_container_width=True,
         )
+        if st.session_state.report_created:
+            col4.button("Create Report 📄", use_container_width=True, on_click=create_report)
     else:
         st.warning("The exam is not over. Please answer all the questions.")
 
