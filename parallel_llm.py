@@ -59,15 +59,16 @@ def split_audio(audio, llm_s, start, split_duration, i, prompt, stt_list, split)
             print(f"Trying to send {i + 1} audio to flash.")
             response = llm_s["flash"].generate_content([audio_file, prompt])
             with lock:
-                stt_list.append(response.text)
+                stt_list.append(str(response.text))
         except:
             print("Error occurred while sending audio to flash.")
             print("Trying to send audio to pro model.")
             response = llm_s["pro"].generate_content([audio_file, prompt])
             with lock:
-                stt_list.append(response.text)
+                stt_list.append(str(response.text))
     except Exception as e:
         print(f"Error occurred while splitting audio: {e}")
+        stt_list.append(" ")
     finally:
         if os.path.exists(output_path):
             os.remove(output_path)
