@@ -121,7 +121,7 @@ class QuestionGraph:
 
 
 
-class ReportGraphGraphState(TypedDict):
+class ReportGraphState(TypedDict):
     exam_results: Dict[str, Any]
     language: str
     report: str
@@ -203,7 +203,7 @@ class ReportGraph:
                             """
         
 
-        builder = StateGraph(ReportGraphGraphState)
+        builder = StateGraph(ReportGraphState)
         builder.add_node("report_maker", self.report_maker)
         builder.add_node("total_report_maker", self.total_report_maker)
         builder.add_node("final_report_maker", self.final_report_maker)
@@ -217,7 +217,7 @@ class ReportGraph:
 
         self.graph = builder.compile()
 
-    def report_maker(self, state: ReportGraphGraphState):
+    def report_maker(self, state: ReportGraphState):
         questions = ""
         exam_results = state["exam_results"]["questions"]
 
@@ -239,7 +239,7 @@ class ReportGraph:
 
         return {"feedbacks": response}
 
-    def total_report_maker(self, state: ReportGraphGraphState):
+    def total_report_maker(self, state: ReportGraphState):
         feedbacks = state["feedbacks"]
 
         prompt = PromptTemplate(
@@ -253,7 +253,7 @@ class ReportGraph:
 
         return {"report": response}
 
-    def final_report_maker(self, state: ReportGraphGraphState):
+    def final_report_maker(self, state: ReportGraphState):
         total_questions = state["exam_results"]["total_questions"]
         correct_answers = state["exam_results"]["correct_answers"]
         incorrect_answers = state["exam_results"]["wrong_answers"]

@@ -13,13 +13,13 @@ from utils import extract_youtube_id
 from graph import HelperLLM
 from moviepy.editor import VideoFileClip
 import yt_dlp
-import imageio_ffmpeg as ffmpeg
+import imageio_ffmpeg
 import time
 import os
 import google.generativeai as genai
 import requests
 import base64
-
+from parallel_llm import split_audio_parallel
 
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -83,7 +83,7 @@ class Loaders:
                 time.sleep(2)
                 self.loader_status.info("💪 Trying to extract audio from YouTube video...")
                 way = "audio"
-                ffmpeg_path = ffmpeg.get_ffmpeg_exe()
+                ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
                 ydl_opts = {
                     'format': 'bestaudio/best',
                     'postprocessors': [{
@@ -136,36 +136,22 @@ class Loaders:
 
     def audio_loader(self, path):
         self.loader_status.info("⏳ Extracting text from audio, this might take a while...")
-        audio_file = genai.upload_file(path=path)
+        chunk_length = 60*20
         prompt = """
         Please provide a detailed text for the audio.
         No need to provide timelines.
         Do not make up any information that is not part of the audio and do not be verbose.
         """
-        try:
-            response = self.model.generate_content([audio_file, prompt])
-            text_response = response.text
-            self.loader_status.info("✅ Audio to text conversion successful!")
-            self.status = True
-        except InternalServerError as e:
-            print("An error occurred: ", e)
-            self.loader_status.info("🤯 An error occurred, triggering the big model...")
-            response = self.big_model.generate_content([audio_file, prompt])
-            text_response = response.text
-            self.loader_status.info("🎉 Audio to text conversion successful with bigger model!")
-        except Exception as e:
-            print("Failed to retrieve text from response:", e)
-            self.loader_status.error("😢 Failed to convert audio to text.")
-            text_response = " "
+        llm_s = {"flash":self.model, "pro":self.big_model}
+        response = " ".join(split_audio_parallel(path, llm_s, chunk_length, self.loader_status, prompt))
 
-        return text_response
+        return response
 
     def mp4_loader(self):
         self.loader_status.info("🛠️ Extracting audio from video...")
         try:
             video = VideoFileClip(self.data)
 
-            # Sesi çıkarma ve kaydetme
             video.audio.write_audiofile("audio.mp3")
 
             self.loader_status.info(f"✅ Audio extracted successfully and saved to audio.mp3")
@@ -371,5 +357,4 @@ class Loaders:
         if self.status:
             self.loader_status.info("🤖 Sending Data to the Model...")
         return split_doc
-
 

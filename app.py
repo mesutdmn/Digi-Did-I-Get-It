@@ -12,6 +12,8 @@ import base64
 import pypandoc
 from parallel_llm import parallel_process
 from graph import QuestionGraph, ReportGraph
+from io import BytesIO
+import static_ffmpeg
 
 load_dotenv()
 
@@ -43,13 +45,6 @@ def create_questions_pdf():
 
 tab1, tab2, tab3 = st.tabs([" ", " ", " "])
 
-data_types_dict = {"pdf":"pdf","mp3":"audio",
-                   "wav":"audio","enex":"enex",
-                   "mp4":"mp4","docx":"docx",
-                   "png":"image","jpg":"image",
-                   "jpeg":"image","pptx":"pptx",
-                   "epub":"epub","txt":"txt"}
-
 if "data" not in st.session_state:
     st.session_state.data = {}
     st.session_state.key_id = uuid.uuid4()
@@ -60,6 +55,7 @@ if "data" not in st.session_state:
     st.session_state.user_request = 0
     st.session_state.answered = False
     pypandoc.download_pandoc()
+    static_ffmpeg.add_paths()
     st.session_state.answer_list = []
     st.session_state.report = ""
     st.session_state.requested_language = ""
@@ -68,6 +64,11 @@ if "data" not in st.session_state:
     st.session_state.correct_count = 0
     st.session_state.show_questions = False
 
+data_types_dict = {"pdf":"pdf","docx":"docx",
+                   "pptx":"pptx","txt":"txt",
+                   "enex":"enex","epub":"epub",
+                   "mp3":"audio","mp4":"video","mpeg4":"video",
+                   "png":"image","jpg":"image","jpeg":"image"}
 
 def send_answer():
     with tab2:
@@ -171,12 +172,12 @@ def return_random_questions():
     st.session_state.show_questions = True
 
 def load_components(key_id):
-    file_upload.file_uploader("Upload File", type=["pdf","txt","mp3","wav","enex","mp4","docx","png","jpg","pptx","epub"],
+    file_upload.file_uploader("Upload File", type=data_types_dict.keys(),
                                      accept_multiple_files=True, key=str(key_id)+"files", help="Please upload your document file")
     url_upload.text_input(label="URL",
                           placeholder="https://medium.com/@dumanmesut/building-autonomous-multi-agent-systems-with-crewai-1a3b3a348271",
                           key=str(key_id)+"url",
-                          help="Please provide the URL of the document you want to generate questions from.")
+                          help="Please provide the URL of the document you want to generate questions from. Can't pass paywall.")
 
     youtube_upload.text_input(label="Youtube URL",
                               placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -254,6 +255,9 @@ with tab1:
 
                     data_type = data_types_dict[data_extension]
                     define_llm(data=temp_file_path, data_type=data_type, data_name=file.name, language_input=requested_language)
+                if os.path.exists(temp_file_path):
+                    os.remove(temp_file_path)
+                    print(f"{temp_file_path} is removed.")
 
         if len(url) > 0:
             st.session_state.data["url"] = [url]
@@ -317,7 +321,7 @@ with tab3:
             file_bytes = file.read()
 
         col3, col4 = st.columns(2)
-        # PDF indirme butonu
+
         col3.download_button(
             label="▼ Download Questions ▼",
             data=file_bytes,

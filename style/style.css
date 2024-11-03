@@ -19,16 +19,30 @@ font-size: 20px;
 .center {{
     text-align: center;
 }}
+
 table {{
-    margin: auto; /* Tabloyu ortalamak için */
+    margin: auto;
     border-collapse: collapse;
-    width: 50%;
+    width: 100%;
+    max-width: 500px;
     margin-bottom: 20px;
 }}
+
 th, td {{
     border: 1px solid #000;
-    padding: 8px;
+    padding: 4px;
     text-align: center;
+    word-wrap: break-word;
+}}
+
+@media (max-width: 600px) {{
+    table {{
+        width: 100%;
+    }}
+    th, td {{
+        font-size: 7px;
+        padding: 6px;
+    }}
 }}
 
 header[data-testid = "stHeader"]{{background: rgba(255,255,255,0);}}
