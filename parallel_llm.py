@@ -43,6 +43,7 @@ def split_audio(audio, llm_s, start, split_duration, i, prompt, stt_list):
     output_path = f"audio_chunk_{i + 1}.mp3"
     if os.path.exists(output_path):
         os.remove(output_path)
+        print(f"Removed existing audio chunk {i + 1}.")
     try:
         (
             ffmpeg

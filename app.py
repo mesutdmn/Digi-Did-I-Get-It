@@ -12,8 +12,11 @@ import base64
 import pypandoc
 from parallel_llm import parallel_process
 from graph import QuestionGraph, ReportGraph
-from io import BytesIO
 import static_ffmpeg
+import gc
+
+def after_task_cleanup():
+    gc.collect()
 
 load_dotenv()
 
@@ -54,8 +57,8 @@ if "data" not in st.session_state:
     st.session_state.choice = None
     st.session_state.user_request = 0
     st.session_state.answered = False
-    pypandoc.download_pandoc()
-    #static_ffmpeg.add_paths()
+    pypandoc.download_pandoc() # Download pandoc for pdf conversion, comment this on windows once it is installed.
+    #static_ffmpeg.add_paths() # This is not working on Streamlit Sharing due to permission issues. ffmpeg is added in package.txt. Uncomment this on windows.
     st.session_state.answer_list = []
     st.session_state.report = ""
     st.session_state.requested_language = ""
@@ -114,6 +117,7 @@ def reset_exam():
     st.session_state.requested_language = ""
     st.session_state.report_created= True
     st.session_state.report = ""
+    after_task_cleanup()
 
 
 def next_question():
