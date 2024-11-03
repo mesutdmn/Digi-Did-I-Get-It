@@ -1,4 +1,8 @@
 
+* [Turkish README](https://github.com/mesutdmn/Digi-Did-I-Get-It/blob/main/README.tr.md)
+
+* [English README](https://github.com/mesutdmn/Digi-Did-I-Get-It/blob/main/README.md)
+
 ## Multimodal-LLM Destekli Multimedya Soru-Cevap Üretim Sistemi
 
 Bu projede, PDF, DOCX, PPTX, EPUB, ENEX (evernote), TXT, MP3, MP4, MPEG4, PNG, JPG, JPEG, URL'ler, YouTube, Spotify, Wikipedia ve doğrudan metin girişi gibi çeşitli multimedya girdilerinden sorular ve cevaplar üreten tamamen otomatik bir sistem geliştirdik. Kullanıcılar, arayüzde soruları yanıtlayarak detaylı performans geri bildirimi ve gelişim önerileri alabilirler.
