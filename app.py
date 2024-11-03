@@ -32,10 +32,15 @@ def get_base64(bin_file):
 
 background = get_base64("./media/background.jpg")
 
-with open("./style/style.css", "r") as style:
-    css=f"""<style>{style.read().format(background=background)}</style>"""
-    st.markdown(css, unsafe_allow_html=True)
+@st.cache_data
+def style():
+    with open("./style/style.css", "r") as style:
+        css = f"""<style>{style.read().format(background=background)}</style>"""
+        st.markdown(css, unsafe_allow_html=True)
 
+style()
+
+@st.cache_data
 def script():
     with open("./style/script.js", "r", encoding="utf-8") as scripts:
         open_script = f"""<script>{scripts.read()}</script> """
