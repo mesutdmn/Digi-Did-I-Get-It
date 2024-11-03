@@ -39,18 +39,19 @@ def parallel_process(data, data_name, language_input, llm, p_bar):
 
 ############################################################################################################
 
-def split_audio(audio, llm_s, start, split_duration, i, prompt, stt_list):
+def split_audio(audio, llm_s, start, split_duration, i, prompt, stt_list, split):
     output_path = f"audio_chunk_{i + 1}.mp3"
     if os.path.exists(output_path):
         os.remove(output_path)
         print(f"Removed existing audio chunk {i + 1}.")
     try:
-        (
-            ffmpeg
-            .input(audio, ss=start, t=split_duration)
-            .output(output_path)
-            .run()
-        )
+        if split:
+            (
+                ffmpeg
+                .input(audio, ss=start, t=split_duration)
+                .output(output_path)
+                .run()
+            )
         print(f"Audio chunk {i + 1} created.")
         audio_file = genai.upload_file(path=output_path)
         print(f"Audio chunk {i + 1} uploaded.")
@@ -82,12 +83,14 @@ def split_audio_parallel(audio, llm_s, split_duration, loader_status, prompt):
         loader_status.info(f"🔪 Splitting audio into {num_chunks} chunks.")
         time.sleep(1)
         loader_status.info("🙏 Please wait while the audio is being split.")
+        split = True
     else:
+        split = False
         start_times = [0]
 
     loader_status.info(f"🔊 Extracting text from audio. Started processing {num_chunks} chunks.")
     with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(split_audio, audio, llm_s, start, split_duration, i, prompt, stt_list) for i, start in enumerate(start_times)]
+        futures = [executor.submit(split_audio, audio, llm_s, start, split_duration, i, prompt, stt_list, split) for i, start in enumerate(start_times)]
 
         for i, future in enumerate(concurrent.futures.as_completed(futures), 1):
             loader_status.progress(value=i / num_chunks, text=f"🔊 Extracting text from audio: {i}/{num_chunks}")
