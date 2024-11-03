@@ -1,8 +1,6 @@
 
 * [Turkish README](https://github.com/mesutdmn/Digi-Did-I-Get-It/blob/main/README.tr.md)
 
-* [English README](https://github.com/mesutdmn/Digi-Did-I-Get-It/blob/main/README.md)
-
 ## Multimodal-LLM Powered Multimedia to Q/A Generation System
 
 In this project we developed a fully automated system which generates questions and answers from various multimedia inputs—including PDF, DOCX, PPTX, EPUB, ENEX (evernote), TXT, MP3, MP4, MPEG4, PNG, JPG, JPEG, URLs, YouTube, Spotify, Wikipedia, and direct text input. Users can interact with the interface to answer questions and receive detailed performance feedback with suggestions for improvement.

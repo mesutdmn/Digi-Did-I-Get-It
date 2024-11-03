@@ -1,6 +1,4 @@
 
-* [Turkish README](https://github.com/mesutdmn/Digi-Did-I-Get-It/blob/main/README.tr.md)
-
 * [English README](https://github.com/mesutdmn/Digi-Did-I-Get-It/blob/main/README.md)
 
 ## Multimodal-LLM Destekli Multimedya Soru-Cevap Üretim Sistemi

@@ -69,6 +69,7 @@ if "data" not in st.session_state:
     st.session_state.question_index = 0
     st.session_state.correct_count = 0
     st.session_state.show_questions = False
+    st.session_state.question_box = "Please upload your data to generate questions."
 
 data_types_dict = {"pdf":"pdf","docx":"docx",
                    "pptx":"pptx","txt":"txt",
@@ -122,6 +123,7 @@ def reset_exam():
     st.session_state.requested_language = ""
     st.session_state.report_created= True
     st.session_state.report = ""
+    st.session_state.question_box = "Please upload your data to generate questions."
     gc.collect()
 
 
@@ -306,7 +308,7 @@ with tab2:
         if st.session_state.question_index + 1 < len(st.session_state.question_list_reorder):
             st.button("Next Question", on_click=next_question, disabled=not st.session_state.answered)
     else:
-        st.warning("There is no question to show.")
+        st.warning(st.session_state.question_box)
 
 with tab2:
 
