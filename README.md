@@ -103,3 +103,5 @@ Digi-Did-I-Get-It/
 - [Mesut Duman](https://www.linkedin.com/in/mesut-duman/)
 
 ### 📺 **Demo Video**
+
+https://github.com/user-attachments/assets/93a9f3fd-4ff8-4cdf-b4f3-86af8208d7be
