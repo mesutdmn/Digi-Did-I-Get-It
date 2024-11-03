@@ -15,9 +15,6 @@ from graph import QuestionGraph, ReportGraph
 import static_ffmpeg
 import gc
 
-def after_task_cleanup():
-    gc.collect()
-
 load_dotenv()
 
 os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
@@ -117,7 +114,7 @@ def reset_exam():
     st.session_state.requested_language = ""
     st.session_state.report_created= True
     st.session_state.report = ""
-    after_task_cleanup()
+    gc.collect()
 
 
 def next_question():
