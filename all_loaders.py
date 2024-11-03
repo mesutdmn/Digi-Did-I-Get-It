@@ -13,7 +13,6 @@ from utils import extract_youtube_id
 from graph import HelperLLM
 from moviepy.editor import VideoFileClip
 import yt_dlp
-import imageio_ffmpeg
 import time
 import os
 import google.generativeai as genai
@@ -83,7 +82,7 @@ class Loaders:
                 time.sleep(2)
                 self.loader_status.info("💪 Trying to extract audio from YouTube video...")
                 way = "audio"
-                ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+
                 ydl_opts = {
                     'format': 'bestaudio/best',
                     'postprocessors': [{
@@ -92,7 +91,6 @@ class Loaders:
                         'preferredquality': '128',
                     }],
                     'outtmpl': 'audio.%(ext)s',
-                    'ffmpeg_location': ffmpeg_path,
                     'progress_hooks': [self.progress_hook],
                     'postprocessor_hooks': [self.post_progress_hook],
                 }
