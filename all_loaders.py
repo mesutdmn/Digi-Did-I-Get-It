@@ -136,7 +136,7 @@ class Loaders:
 
     def audio_loader(self, path):
         self.loader_status.info("⏳ Extracting text from audio, this might take a while...")
-        chunk_length = 60*60
+        chunk_length = 60*20
         prompt = """
         Please provide a detailed text for the audio.
         No need to provide timelines.

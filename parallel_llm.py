@@ -90,7 +90,7 @@ def split_audio_parallel(audio, llm_s, split_duration, loader_status, prompt):
         start_times = [0]
 
     loader_status.info(f"🔊 Extracting text from audio. Started processing {num_chunks} chunks.")
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor: # 2 workers to avoid overloading the live streamlit, otherwise it will crash
         futures = [executor.submit(split_audio, audio, llm_s, start, split_duration, i, prompt, stt_list, split) for i, start in enumerate(start_times)]
 
         for i, future in enumerate(concurrent.futures.as_completed(futures), 1):
