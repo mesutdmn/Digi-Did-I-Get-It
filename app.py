@@ -55,7 +55,7 @@ if "data" not in st.session_state:
     st.session_state.user_request = 0
     st.session_state.answered = False
     pypandoc.download_pandoc()
-    static_ffmpeg.add_paths()
+    #static_ffmpeg.add_paths()
     st.session_state.answer_list = []
     st.session_state.report = ""
     st.session_state.requested_language = ""
