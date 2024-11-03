@@ -8,6 +8,7 @@ from threading import Lock
 import ffmpeg
 import math
 import os
+import gc
 
 lock = Lock()
 def process_doc(doc, language_input, llm, shared_list):
@@ -52,6 +53,7 @@ def split_audio(audio, llm_s, start, split_duration, i, prompt, stt_list, split)
                 .output(output_path)
                 .run()
             )
+            gc.collect()
         print(f"Audio chunk {i + 1} created.")
         audio_file = genai.upload_file(path=output_path)
         print(f"Audio chunk {i + 1} uploaded.")
