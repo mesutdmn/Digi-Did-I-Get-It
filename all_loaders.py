@@ -24,6 +24,7 @@ from parallel_llm import split_audio_parallel
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 class Loaders:
+    """Loaders class to load data from different sources and return the split text"""
     def __init__(self, data,data_type, loader_status):
         self.data = data
         self.data_type = data_type
@@ -52,6 +53,7 @@ class Loaders:
         }
 
     def youtube_loader(self, video_id):
+        """Extracts text from YouTube video"""
         way = "transcript"
         document = ""
         attempt = 0
@@ -133,6 +135,7 @@ class Loaders:
             time.sleep(1)
 
     def audio_loader(self, path):
+        """Extracts text from audio"""
         self.loader_status.info("⏳ Extracting text from audio, this might take a while...")
         chunk_length = 60*20
         prompt = """
@@ -146,6 +149,7 @@ class Loaders:
         return response
 
     def mp4_loader(self):
+        """Extracts audio from video"""
         self.loader_status.info("🛠️ Extracting audio from video...")
         try:
             video = VideoFileClip(self.data)
@@ -163,6 +167,7 @@ class Loaders:
         return response
 
     def image_loader(self):
+        """Extracts text from image"""
         self.loader_status.info("🛠️ Extracting text from image...")
         image_file = genai.upload_file(path=self.data)
         prompt = """
@@ -192,6 +197,7 @@ class Loaders:
         return text_response
 
     def get_access_token(self, client_id, client_secret):
+        """Get Spotify access token"""
         auth_url = 'https://accounts.spotify.com/api/token'
         auth_header = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode("ascii")
 
@@ -207,6 +213,7 @@ class Loaders:
         return response.json().get("access_token")
 
     def get_podcast_title(self,episode_id, access_token):
+        """Get podcast title from Spotify"""
         url = f"https://api.spotify.com/v1/episodes/{episode_id}"
         headers = {
             "Authorization": f"Bearer {access_token}"
@@ -220,6 +227,7 @@ class Loaders:
             return None
 
     def spotify_loader(self):
+        """Extracts text from Spotify podcast"""
         self.loader_status.info("🛠️ Extracting data from Spotify...")
         access_token = self.get_access_token(self.spotify_client_id, self.spotify_client_secret)
         episode_id = self.data.split("/")[-1]
@@ -248,6 +256,7 @@ class Loaders:
                 return video_id
 
     def other_loader(self):
+        """Extracts text from other sources"""
         self.loader_status.info("🛠️ Extracting data from other sources...")
         document = self.loaders[self.data_type](self.data).load()
         split_doc = self.text_splitter.split_text(" ".join([doc.page_content for doc in document]))
@@ -257,6 +266,7 @@ class Loaders:
 
 
     def set_loaders(self):
+        """Set loaders for different data types"""
         if self.data_type=="wiki":
             if self.helper_llm.ask_llm(f"Is this something searchable on Wikipedia?\n{self.data}"):
                 try:

@@ -12,7 +12,7 @@ import gc
 
 lock = Lock()
 def process_doc(doc, language_input, llm, shared_list):
-
+    """Process the document and generate questions using the LLM model."""
     try:
         response = llm.invoke({"context": doc, "language": language_input})["result"]["questions"]
         response = shuffle_choices(response)
@@ -28,6 +28,7 @@ def process_doc(doc, language_input, llm, shared_list):
 
 
 def parallel_process(data, data_name, language_input, llm, p_bar):
+    """Process the document and generate questions using the LLM model in parallel."""
     shared_list = []
 
     with ThreadPoolExecutor() as executor:
@@ -41,6 +42,7 @@ def parallel_process(data, data_name, language_input, llm, p_bar):
 ############################################################################################################
 
 def split_audio(audio, llm_s, start, split_duration, i, prompt, stt_list, split):
+    """Split the audio and extract text from it using the LLM model."""
     output_path = f"audio_chunk_{i + 1}.mp3"
     if os.path.exists(output_path):
         os.remove(output_path)
@@ -76,6 +78,7 @@ def split_audio(audio, llm_s, start, split_duration, i, prompt, stt_list, split)
             os.remove(output_path)
 
 def split_audio_parallel(audio, llm_s, split_duration, loader_status, prompt):
+    """Split the audio and extract text from it using the LLM model in parallel."""
     stt_list = []
     probe = ffmpeg.probe(audio)
     duration = float(probe['format']['duration'])

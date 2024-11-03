@@ -4,6 +4,7 @@
 In this project we developed a fully automated system which generates questions and answers from various multimedia inputs—including PDF, DOCX, PPTX, EPUB, ENEX (evernote), TXT, MP3, MP4, MPEG4, PNG, JPG, JPEG, URLs, YouTube, Spotify, Wikipedia, and direct text input. Users can interact with the interface to answer questions and receive detailed performance feedback with suggestions for improvement.
 
 🚀 **Live Demo**: [Did I Get It](https://digi-btk.streamlit.app/)
+* App may crash due to free streamlit cloud limitations. Please run the app locally for better experience.
 
 ### ⚙️ **Workflow**:
 1. **Input**: Users upload multimedia files or enter URLs.
@@ -18,17 +19,6 @@ In this project we developed a fully automated system which generates questions 
 ![App Workflow](https://github.com/user-attachments/assets/34fcf8c0-fab5-4f58-9c5e-5845febaa43f)
 
 ### 📂 **Project Structure**:
-- **`app.py`**: Main Streamlit application file.
-- **`question_format.py`**: Contains the question format for the quiz.
-- **`all_loaders.py`**: Contains all the loaders for different file types.
-- **`parallel_llm.py`**: Contains the parallel LLM model for question generation.
-- **`utils.py`**: Contains utility functions for the project.
-- **`graph.py`**: Contains the Question Generation, Report Generation and Helper LLMs structure for the project.
-- **`requirements.txt`**: Contains all the dependencies required for the project.
-- **`requirements_with_version.txt`**: Contains all the dependencies with version required for the project.
-- **`packages.txt`**: Contains all the packages required for the project.
-- **`media`**: Contains background image for the project.
-- **`styles`**: Contains the CSS, JS for interface and TTF file for fonts.
 
 ```
 Digi-Did-I-Get-It/
@@ -41,34 +31,28 @@ Digi-Did-I-Get-It/
 ├── requirements.txt           # Lists dependencies required for running the project.
 ├── requirements_with...txt    # Lists dependencies with specific versions for reproducibility.
 ├── packages.txt               # Lists OS-level packages required for the project.
-├── media/                     # Directory for project media files (e.g., images, videos).
+├── media/                     # Directory for project media files.
 │   └── background.jpg         # Background image for the project.
 ├── styles/                    # Contains styling and fonts for the user interface.
 │   ├── style.css              # Custom CSS for styling the Streamlit interface.
-│   ├── script.js              # Optional JavaScript for added interactivity in Streamlit.
+│   ├── script.js              # Overwrites some Streamlit functions for additional interactivity.
 │   └── arial-unicode-ms.ttf   # Arial Unicode MS for several alphabet support.(Latin, Greek, Cyrillic, Arabic, Chinese, Korean etc.)
 ├── README.md                  # English project documentation file.
 └── README.tr.md               # Turkish project documentation file.
 
 ```
 ### 🎯 **Use Cases**:
-- **Education**: Students can use the system to test their understanding of lecture notes, textbooks, or online resources.
+- **Education**: Learners can reinforce their learning by answering questions generated from multimedia content.
 - **Training & Development**: Professionals can enhance their knowledge retention and comprehension of training materials.
 - **Personal Growth**: Individuals can learn new concepts from multimedia content and assess their understanding.
 - **Content Creation**: Creators can generate quizzes from their multimedia content for interactive learning experiences.
 - **Research & Analysis**: Researchers can extract questions from academic papers, reports, and multimedia sources for analysis.
 - **Language Learning**: Language learners can practice reading, listening, and comprehension skills with multimedia content.
-- **Accessibility**: Users with visual or auditory impairments can access multimedia content in a question-answer format.
 - **Entertainment**: Users can engage with multimedia content in a fun and interactive way through quizzes.
-- **Professional Development**: Professionals can stay updated on industry trends and news by generating questions from multimedia sources.
 - **Skill Development**: Users can test their skills and knowledge in various domains by answering questions from multimedia content.
-- **Content Review**: Content creators can review their multimedia content by generating questions and answers for self-assessment.
 - **Knowledge Sharing**: Users can create quizzes from multimedia content to share with others for educational purposes.
 - **Training Evaluation**: Trainers can assess the effectiveness of training programs by generating questions from multimedia training materials.
-- **Learning Reinforcement**: Learners can reinforce their learning by answering questions generated from multimedia content.
-- **Feedback Mechanism**: Users can receive feedback on their understanding of multimedia content through question-answer sessions.
 - **Interactive Learning**: Users can engage with multimedia content interactively by answering questions generated from the content.
-- **Study Aid**: Students can use the system as a study aid to test their knowledge and understanding of multimedia study materials.
 
 
 ### 🛠️ **Technologies Used**

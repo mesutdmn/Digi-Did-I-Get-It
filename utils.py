@@ -26,6 +26,7 @@ data_types = {"pdf":"application/pdf",
               "epub":"application/epub+zip"}
 
 def check_file_type(file):
+    """Check if the file is of the correct type"""
     file_content = file.read()
     file_extension = file.name.split('.')[-1].lower()
 
@@ -37,6 +38,7 @@ def check_file_type(file):
 
 
 def extract_youtube_id(url):
+    """Extract the YouTube video ID from a URL"""
     pattern = r'(?:https?://)?(?:www\.)?(?:youtube\.com/(?:[^/]+/.*|(?:v|e(?:mbed)?|watch|watch\?.*v=)|.*[?&]v=)|youtu\.be/)([a-zA-Z0-9_-]{11})'
 
     match = re.search(pattern, url)
@@ -79,6 +81,7 @@ def shuffle_choices(question_data):
 
 
 def create_pdf(data):
+    """Create a PDF file from a list of question dictionaries"""
     doc = SimpleDocTemplate("questions.pdf", pagesize=A4, title="Questions and Answers",
                              topMargin=0.5 * inch, bottomMargin=0.5 * inch)
 

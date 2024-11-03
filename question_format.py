@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List, Literal
 
 class Question(BaseModel):
+    """A multiple-choice question with four choices and one correct answer."""
     question: str = Field(..., description="The text of the question being asked.")
     # The actual question text that will be presented to the user.
 

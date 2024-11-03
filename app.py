@@ -25,6 +25,7 @@ os.environ["SPOTIFY_CLIENT_SECRET"] = st.secrets["SPOTIFY_CLIENT_SECRET"]
 st.set_page_config(page_title="Digi", page_icon="🤖")
 
 def get_base64(bin_file):
+    """Get base64 of a file."""
     with open(bin_file, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
@@ -71,6 +72,7 @@ data_types_dict = {"pdf":"pdf","docx":"docx",
                    "png":"image","jpg":"image","jpeg":"image"}
 
 def send_answer():
+    """Send the answer to the question."""
     with tab2:
 
         if st.session_state.choice is not None:
@@ -93,6 +95,7 @@ def send_answer():
 
 
 def show_question():
+    """Show the question and options."""
     st.session_state.question = st.session_state.question_list_reorder[st.session_state.question_index]
     st.write(f"Q-{st.session_state.question_index + 1}: {st.session_state.question['question']}")
 
@@ -132,10 +135,14 @@ def take_again():
 
 
 def clean_components():
+    """Clean the components."""
     st.session_state.key_id = uuid.uuid4()
 
 def calculate_results():
-    result_markdown.markdown(f"The exam is over. Here are your results:\n Total number of questions: {len(st.session_state.question_list_reorder)} \n Number of correct answers: {st.session_state.correct_count}")
+    """Calculate the results."""
+    st.session_state.report = (f"The exam is over. Here are your results:"
+                               f"\n Total number of questions: {len(st.session_state.question_list_reorder)} "
+                               f"\n Number of correct answers: {st.session_state.correct_count}")
 
 with tab2:
     back, forward = st.columns(2)
@@ -149,6 +156,7 @@ with tab2:
 
 
 def define_llm(data, data_type, data_name, language_input="English"):
+    """Define the LLM and generate questions."""
     llm = QuestionGraph().graph
     loader = Loaders(data, data_type,loader_status)
     data = loader.set_loaders()
@@ -159,6 +167,7 @@ def define_llm(data, data_type, data_name, language_input="English"):
     print("Questions are generated successfully.")
 
 def create_report():
+    """Create the report."""
     report = ReportGraph().graph
     exam_results = {"total_questions": len(st.session_state.question_list_reorder),
                     "correct_answers": st.session_state.correct_count,
@@ -169,10 +178,12 @@ def create_report():
     st.session_state.report_created = False
 
 def return_random_questions():
+    """Return random amount of questions."""
     st.session_state.question_list_reorder = random.sample(st.session_state.question_list_reorder, st.session_state.user_request)
     st.session_state.show_questions = True
 
 def load_components(key_id):
+    """Load the components."""
     file_upload.file_uploader("Upload File", type=data_types_dict.keys(),
                                      accept_multiple_files=True, key=str(key_id)+"files", help="Please upload your document file")
     url_upload.text_input(label="URL",
