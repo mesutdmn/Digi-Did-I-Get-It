@@ -143,6 +143,7 @@ def calculate_results():
     st.session_state.report = (f"The exam is over. Here are your results:"
                                f"\n\n Total number of questions: {len(st.session_state.question_list_reorder)} "
                                f"\n\n Number of correct answers: {st.session_state.correct_count}")
+    st.session_state.report_created = True
 
 with tab2:
     back, forward = st.columns(2)
