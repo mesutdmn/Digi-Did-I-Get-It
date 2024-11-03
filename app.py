@@ -176,7 +176,7 @@ def load_components(key_id):
     file_upload.file_uploader("Upload File", type=data_types_dict.keys(),
                                      accept_multiple_files=True, key=str(key_id)+"files", help="Please upload your document file")
     url_upload.text_input(label="URL",
-                          placeholder="https://medium.com/@dumanmesut/building-autonomous-multi-agent-systems-with-crewai-1a3b3a348271",
+                          placeholder="https://arxiv.org/pdf/2403.05530",
                           key=str(key_id)+"url",
                           help="Please provide the URL of the document you want to generate questions from. Can't pass paywall.")
 

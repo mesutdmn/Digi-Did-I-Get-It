@@ -126,7 +126,7 @@ class Loaders:
 
     def post_progress_hook(self, d):
         if d['status'] == 'started':
-            self.loader_status.info(f"⏳ Started {d["postprocessor"]}, this might take a while..")
+            self.loader_status.info(f"⏳ Started {d['postprocessor']}, this might take a while..")
             time.sleep(1)
         elif d['status'] == 'finished':
             self.loader_status.info(f"✅ Post-processing finished!")
